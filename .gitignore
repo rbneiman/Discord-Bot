@@ -1,0 +1,9 @@
+#Blacklist
+/*
+/src/main/java/main/MCServerThread.java
+
+
+#Whitelist
+!.gitignore
+!README.md
+!/src/main/java/main/
