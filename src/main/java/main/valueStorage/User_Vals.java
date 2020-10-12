@@ -15,10 +15,13 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 
 import main.ConfigStorage;
 import main.Main;
+import main.valueStorage.Vote_Stuff.VoteCheck;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
@@ -34,8 +37,6 @@ import net.dv8tion.jda.api.requests.restaction.pagination.MessagePaginationActio
 
 
 public class User_Vals {
-	
-	
 	
 	
 	
@@ -88,6 +89,10 @@ public class User_Vals {
 			}
 		}
 		
+		Timer timer = new Timer(); 	
+		DailyBackup backupTask = new DailyBackup(this);		
+		timer.schedule(backupTask, 3600000*24, 3600000*24); //24 hours
+//		timer.schedule(backupTask, 10000, 10000);
 	}
 	
 	

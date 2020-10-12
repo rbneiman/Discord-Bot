@@ -18,11 +18,11 @@ public class Vote_Stuff {
 		@Override
 		public void run() {
 			for(KarmaCounts k : karmaCounter.values() ) {
-				int upLimit = calcLimitUp(k) + 4;
-				int downLimit = calcLimitDown(k) + 1;
+				int upLimit = calcLimitUp(k);
+				int downLimit = calcLimitDown(k);
 				
 				
-				if(k.downLeft==0) {k.timerPerTick++;}
+				if(k.downLeft==0) {k.timerPerTick *= 2;}
 				
 				if(ticks%k.timerPerTick==0) {
 					
@@ -34,8 +34,8 @@ public class Vote_Stuff {
 										
 					if(k.downLeft<downLimit) {
 						k.downLeft++;
-//						System.out.println("D: " + k.downLeft);
-//						System.out.println("Time Tick: " + k.timerPerTick);
+						System.out.println("D: " + k.downLeft);
+						System.out.println("Time Tick: " + k.timerPerTick);
 					}
 					
 					if(k.downLeft==downLimit&&k.timerPerTick>1) {
@@ -57,11 +57,11 @@ public class Vote_Stuff {
 	User_Vals vals;
 	
 	public static int calcLimitUp(KarmaCounts k) {
-		return (int) Math.sqrt((double)k.getKarma());
+		return (int) (0.89*Math.pow((double)k.getKarma(), 0.383141762452) + 2.0);
 	}
 	
 	public static int calcLimitDown(KarmaCounts k) {
-		return (int) Math.pow((double) k.getKarma(), 0.333333);
+		return (int) (0.7*Math.pow((double)k.getKarma(), 0.383141762452) + 1.0);
 	}
 	
 	public Vote_Stuff(User_Vals vals){
@@ -70,7 +70,7 @@ public class Vote_Stuff {
 		Timer timer = new Timer(); 
         TimerTask task = new VoteCheck(vals.karmaCounter); 
           
-        timer.schedule(task, 900000, 900000); //15 mins
-//        timer.schedule(task, 5000, 5000); //5 secs
+       timer.schedule(task, 1800000, 1800000); //30 mins
+ //       timer.schedule(task, 5000, 5000); //5 secs
 	}
 }

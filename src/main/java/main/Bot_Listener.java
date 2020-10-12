@@ -47,7 +47,6 @@ public class Bot_Listener extends ListenerAdapter
 	private Random rand=new Random(time);
 	private AudioPlayerManager playerManager= new DefaultAudioPlayerManager();
 
-	private boolean running = false;
 	
 	private ZorkManager zorkManager= new ZorkManager();
 	private static final Map<String, Map.Entry<AudioPlayer, TrackScheduler>> players = new HashMap<>();
@@ -303,6 +302,7 @@ public class Bot_Listener extends ListenerAdapter
 	        	}
 	        }
 	        else if(words[0].contentEquals("!count")) {	
+	        	if(id != ConfigStorage.developerID) return;
 	        	int radix = 10;
 	        	try {
 	        	if(words[2]!=null) {
@@ -654,6 +654,7 @@ public class Bot_Listener extends ListenerAdapter
 				voter.downLeft--;
 				userVals.karmaCounter.get(author).downvotes++;	
 				System.out.println(guild.getMemberById(id).getEffectiveName() + " downvoted " +  guild.getMemberById(author).getEffectiveName());
+				miscUtils.karmaLog(guild.getMemberById(id).getEffectiveName() + " downvoted " +  guild.getMemberById(author).getEffectiveName());
 			}
 			else {
 				event.getReaction().removeReaction(event.getUser()).queue();
