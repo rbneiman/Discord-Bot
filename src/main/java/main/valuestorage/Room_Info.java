@@ -6,7 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import main.ConfigStorage;
-import main.miscUtils;
+import main.MiscUtils;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -52,7 +52,7 @@ public class Room_Info {
 		
 		
 		if(owner == ConfigStorage.botHelperID) {
-			owner = miscUtils.findMember(g, others[0]).getIdLong();
+			owner = MiscUtils.findMember(g, others[0]).getIdLong();
 			others = Arrays.copyOfRange(others, 1, others.length);
 		}
 		
@@ -70,8 +70,8 @@ public class Room_Info {
 		act = act.setAllow(Permission.VIEW_CHANNEL);
 		act.setAllow(EnumSet.of(Permission.VIEW_CHANNEL,Permission.MANAGE_CHANNEL)).queue();
 		for(String s : others) {
-			if(s != null && miscUtils.findMember(g, s)!=null) {
-				channel.putPermissionOverride(miscUtils.findMember(g, s)).setAllow(Permission.VIEW_CHANNEL).queue();
+			if(s != null && MiscUtils.findMember(g, s)!=null) {
+				channel.putPermissionOverride(MiscUtils.findMember(g, s)).setAllow(Permission.VIEW_CHANNEL).queue();
 			}	
 			else if(s!=null) {
 				fromChannel.sendMessage("Could not find " + s);

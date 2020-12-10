@@ -117,7 +117,7 @@ public class BotListener extends ListenerAdapter
 
         Message message = event.getMessage();
         String content = message.getContentRaw(); 
-        String[] words=miscUtils.splitWords(content);
+        String[] words= MiscUtils.splitWords(content);
         
         if(!message.isFromGuild()) {
         	privateMsg(event, words);
@@ -155,13 +155,14 @@ public class BotListener extends ListenerAdapter
 				LOGGER.debug("Test");
 				LOGGER.trace("Test");
 	            channel.sendMessage("Pong!").queue();
+	            DatabaseManager.backupDatabase();
 //				channel.sendMessage("```0.33333 Karma has been added to your account!```").queue();
 //				userVals.sqlMigrate(guild);
 	        }
 	        else if(words[0].contentEquals("!start")) {
 	        	String[] search;
 	        	if(words[1].contains("facebook.com")) {
-	        		search = new String[] {miscUtils.getFaceVid(words[1])};
+	        		search = new String[] {MiscUtils.getFaceVid(words[1])};
 	        	}
 	        	else if(!words[1].contains("https:") && !words[1].contains("C:")) {
         			search = new String[] {YtubeList.doSearch(words[1])};
@@ -254,7 +255,7 @@ public class BotListener extends ListenerAdapter
 	        	channel.sendMessage(tempS.substring(0, tempS.length()-2)).queue();
 	        }
 	        else if(words[0].contentEquals("!ask")) {
-	        	channel.sendMessage( miscUtils.wolframRead(words[1]) ).queue();
+	        	channel.sendMessage( MiscUtils.wolframRead(words[1]) ).queue();
 	        }
 	        else if(words[0].contentEquals("!fancytest")) {
 	        	channel.sendMessage(builder.build()).queue();
@@ -271,7 +272,7 @@ public class BotListener extends ListenerAdapter
 	        }
 	        else if(words[0].contentEquals("!default")) {	
 	        	for (int i=0;i<10;i++) {
-	        		channel.sendMessage("```" + miscUtils.asciiArchive(i) + "```").queue();
+	        		channel.sendMessage("```" + MiscUtils.asciiArchive(i) + "```").queue();
 	        	}
 	        }
 	        else if(words[0].contentEquals("!count")) {	
@@ -463,7 +464,7 @@ public class BotListener extends ListenerAdapter
 						return;
 					}
 					if(!adminUsers.contains(id)){
-						channel.sendMessage(miscUtils.asciiArchive(10)).queue();
+						channel.sendMessage(MiscUtils.asciiArchive(10)).queue();
 						adminUsers.add(id);
 					}
 					if(words[2].contentEquals("create")){
@@ -585,7 +586,7 @@ public class BotListener extends ListenerAdapter
 				authorMemberInfo.upvote();
 				authorMemberInfo.update();
 				LOGGER.info(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
-				miscUtils.karmaLog(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
+				MiscUtils.karmaLog(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
 			}
 			else {
 				event.getReaction().removeReaction(event.getUser()).queue();
@@ -601,7 +602,7 @@ public class BotListener extends ListenerAdapter
 				authorMemberInfo.downvote();
 				authorMemberInfo.update();
 				LOGGER.info(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
-				miscUtils.karmaLog(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
+				MiscUtils.karmaLog(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
 			}
 			else {
 				event.getReaction().removeReaction(event.getUser()).queue();

@@ -14,7 +14,7 @@ public class VoteStuff {
 
 	
 	class VoteCheck extends TimerTask{
-		private Logger LOGGER = LogManager.getLogger("VoteCheck");
+		private final Logger LOGGER = LogManager.getLogger(VoteCheck.class);
 
 		boolean lastEmpty = false;
 		public long ticks;
@@ -32,12 +32,12 @@ public class VoteStuff {
 
 						if(m.upvotesLeft<upLimit) {
 							m.upvotesLeft++;
-							LOGGER.debug("U: " + m.upvotesLeft + " Time Tick: " + m.ticksPerIncrement + " ID: " + m.memberId);
+							LOGGER.trace("U: " + m.upvotesLeft + " Time Tick: " + m.ticksPerIncrement + " ID: " + m.memberId);
 						}
 
 						if(m.downvotesLeft<downLimit) {
 							m.downvotesLeft++;
-							LOGGER.debug("D: " + m.downvotesLeft + "Time Tick: " + m.ticksPerIncrement + " ID: " + m.memberId);
+							LOGGER.trace("D: " + m.downvotesLeft + "Time Tick: " + m.ticksPerIncrement + " ID: " + m.memberId);
 						}
 
 						if(m.downvotesLeft==downLimit&&m.ticksPerIncrement>1) {

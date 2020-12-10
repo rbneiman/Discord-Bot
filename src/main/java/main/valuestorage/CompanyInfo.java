@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import main.miscUtils;
+import main.MiscUtils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
@@ -205,10 +205,10 @@ public class CompanyInfo implements Serializable{
 		}
 		
 		for(int i=0; i<links.length-1; i++) {
-			out += "[link" + miscUtils.padSpaces(Integer.toString(i),7) + " ](" + links[i] + ") ";
+			out += "[link" + MiscUtils.padSpaces(Integer.toString(i),7) + " ](" + links[i] + ") ";
 			if(i%10==0 && i>0) out += "\n    ";
 		}
-		out += "[link" + miscUtils.padSpaces(Integer.toString(links.length-1),7) + " ](" + links[links.length-1] + ") ";
+		out += "[link" + MiscUtils.padSpaces(Integer.toString(links.length-1),7) + " ](" + links[links.length-1] + ") ";
 		
 		
 		

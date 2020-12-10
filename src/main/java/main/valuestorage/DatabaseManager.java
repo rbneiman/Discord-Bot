@@ -5,13 +5,24 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 
 public class DatabaseManager {
     public static DatabaseManager INSTANCE = new DatabaseManager();
     private static Logger LOGGER = LogManager.getLogger("DatabaseManager");
     public static final String url = "jdbc:sqlite:C:/sqlite/db/BotData.db";
+    public static final String urlBackup = "C:/sqlite/db/BotDataBak/BotData";
     public static Connection conn;
 
     private DatabaseManager(){
@@ -42,10 +53,11 @@ public class DatabaseManager {
                     out.add(temp);
                 }while (rs.next());
             }
-
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return out;
     }
 
@@ -54,6 +66,7 @@ public class DatabaseManager {
             Statement st = conn.createStatement();
             st.execute("INSERT INTO member_info (member_id, guild_id, upvotes, downvotes)" +
                     String.format("Values (%d,%d,%d,%d)", member.memberId, member.guildId, member.getUpvotes(), member.getDownvotes()));
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -64,6 +77,7 @@ public class DatabaseManager {
             Statement st = conn.createStatement();
             st.execute("INSERT INTO user_info (user_id, gold_tokens)" +
                     String.format("Values (%d,%d)", user.userId, user.goldTokens));
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -75,6 +89,7 @@ public class DatabaseManager {
                     String.format("Values (%d,%d,%d,(?))", action.memberId, action.channelId, action.guildId));
             st.setString(1, action.name);
             st.execute();
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -86,6 +101,7 @@ public class DatabaseManager {
                     String.format("Values (%d,%d,(?));", courseInfo.channelId, courseInfo.guildId));
             st.setString(1, courseInfo.name);
             st.execute();
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -96,6 +112,7 @@ public class DatabaseManager {
             Statement st = conn.createStatement();
             st.execute("DELETE FROM course_actions WHERE " +
                     String.format("member_id = %d AND channel_id = %d AND guild_id = %d ;", member.getIdLong(), channel.getIdLong(), member.getGuild().getIdLong()));
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -107,6 +124,7 @@ public class DatabaseManager {
                     String.format("channel_id = %d AND guild_id = %d AND name = (?) ;",  courseInfo.channelId, courseInfo.guildId));
             st.setString(1, courseInfo.name);
             st.execute();
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -132,7 +150,7 @@ public class DatabaseManager {
                     out.add(temp);
                 }while (rs.next());
             }
-
+            st.close();
             return out;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -159,7 +177,7 @@ public class DatabaseManager {
                     out.add(temp);
                 }while (rs.next());
             }
-
+            st.close();
             return out;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -184,7 +202,7 @@ public class DatabaseManager {
                     out.add(temp);
                 }while (rs.next());
             }
-
+            st.close();
             return out;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -213,7 +231,7 @@ public class DatabaseManager {
                     out.add(temp);
                 }while (rs.next());
             }
-
+            st.close();
             return out;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -227,6 +245,7 @@ public class DatabaseManager {
             for(int i=0; args!=null && i<args.length; i++)
                 st.setString(i + 1, args[i]);
             st.execute();
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -238,6 +257,7 @@ public class DatabaseManager {
             for(int i=0; args!=null && i<args.length; i++)
                 st.setString(i + 1, args[i]);
             st.execute();
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -247,6 +267,7 @@ public class DatabaseManager {
         try {
             Statement st = conn.createStatement();
             st.execute(String.format("UPDATE member_info SET %s = '%s' WHERE member_id = %d;", name, value.toString(), memberId));
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -257,10 +278,45 @@ public class DatabaseManager {
             PreparedStatement st = conn.prepareStatement(String.format("UPDATE course_info SET %s = (?) WHERE channel_id = %d;", name, channelId));
             st.setString(1, value.toString());
             st.execute();
+            st.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    public static void backupDatabase(){
+        //TODO better backup functionality
+        Instant now = Instant.now();
+        String backupURL = urlBackup + now.truncatedTo(ChronoUnit.MINUTES).toString().replace(":","-") + ".db";
+        FileInputStream in = null;
+        FileOutputStream out = null;
+        LOGGER.debug(backupURL);
+        try {
+            in = new FileInputStream("C:/sqlite/db/BotData.db");
+            out = new FileOutputStream(backupURL);
 
+            int c;
+            while ((c = in.read()) != -1) {
+                out.write(c);
+            }
+        } catch (IOException e) {
+            LOGGER.error(e,e);
+        } finally{
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    LOGGER.error(e,e);
+                }
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    LOGGER.error(e,e);
+                }
+            }
+        }
+
+    }
 }

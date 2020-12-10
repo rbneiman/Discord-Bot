@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimerTask;
@@ -16,8 +17,12 @@ import main.valuestorage.CompanyInfo;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class miscUtils {
+public class MiscUtils {
+	private static Logger LOGGER = LogManager.getLogger(MiscUtils.class);
+
 	public static String[] splitWords(String s) {
 		String[] words=new String[10];
 		words[0]="";
@@ -216,11 +221,13 @@ public class miscUtils {
 	
 	
 	public static void karmaLog(String event) {
+		ZonedDateTime now = ZonedDateTime.now();
+		String out = String.format("%1$tY-%1$tm-%1$td %1$tk:%1$tM:%1$tS - ", now) + event;
+		LOGGER.trace(out);
 		try {
 		    BufferedWriter writer = new BufferedWriter(new FileWriter(ConfigStorage.botdataPath + "karmaLog.txt", true));
 		    writer.append('\n');
-		    writer.append(event);
-		    
+		    writer.append(out);
 		    writer.close();
 		} catch (Exception e) {
 			e.printStackTrace();

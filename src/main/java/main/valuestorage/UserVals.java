@@ -6,10 +6,7 @@ import net.dv8tion.jda.api.entities.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class UserVals {
@@ -45,10 +42,14 @@ public class UserVals {
 		}
 
 
-//		TODO backup functionality
-//		Timer timer = new Timer();
-//		DailyBackup backupTask = new DailyBackup(this);
-//		timer.schedule(backupTask, 3600000*24, 3600000*24); //24 hours
+		Timer timer = new Timer();
+		DailyBackup backupTask = new DailyBackup(this);
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				DatabaseManager.backupDatabase();
+			}
+		}, 3600000 * 24, 3600000 * 24); //24 hours
 //		timer.schedule(backupTask, 10000, 10000);
 	}
 
