@@ -1,0 +1,47 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+mainClassName = 'main.Main'
+
+version = '3.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
+dependencies {
+  compile 'net.dv8tion:JDA:4.2.0_168'
+  compile 'com.sedmelluq:lavaplayer:1.3.55'
+  compile 'org.apache.httpcomponents:httpclient:4.5.8'
+  compile 'net.sourceforge.htmlunit:htmlunit:2.32'
+  compile 'se.michaelthelin.spotify:spotify-web-api-java:4.2.0'
+  compile 'com.google.api-client:google-api-client:1.23.0'
+  compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+  compile 'com.google.apis:google-api-services-youtube:v3-rev222-1.25.0'
+  compile group: 'org.json', name: 'json', version: '20200518'
+  compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.+'
+  compile 'org.apache.logging.log4j:log4j-api:2.+'
+  compile 'org.apache.logging.log4j:log4j-core:2.+'
+  compile 'org.apache.logging.log4j:log4j-web:2.+'
+  compile group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
+}
+
+jar {
+  manifest {
+    attributes('Main-Class': 'main.Main'
+    )
+  }
+  from {
+    configurations
+            .compile
+            .findAll { !it.name.endsWith('pom') }
+            .collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
+
+compileJava.options.encoding = 'UTF-8'

@@ -1,9 +1,6 @@
-#Blacklist
-/*
-/src/main/java/main/MCServerThread.java
 
-
-#Whitelist
-!.gitignore
-!README.md
-!/src/main/java/main/
+/bot_config.json
+/gradlew
+/gradlew.bat
+/src/main/log4j.properties
+/settings.gradle

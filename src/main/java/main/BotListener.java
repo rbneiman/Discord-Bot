@@ -1,35 +1,24 @@
 package main;
 
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
-import java.io.IOException;
-import java.io.InputStream;
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import main.audio.Bot_Audio;
+import main.audio.BotAudioResultHandler;
+import main.audio.BotAudio;
 import main.audio.TrackScheduler;
-import main.cardGames.GameHandler;
-import main.valueStorage.KarmaCounts;
-import main.valueStorage.KarmaGetter;
-import main.valueStorage.SAVE_TYPE;
-import main.valueStorage.User_Vals;
+import main.cardgames.GameHandler;
+import main.valuestorage.*;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
@@ -39,25 +28,29 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class Bot_Listener extends ListenerAdapter 
+public class BotListener extends ListenerAdapter
 {
-	private EmbedBuilder builder=new EmbedBuilder();
-	private long time=System.currentTimeMillis();
-	private Random rand=new Random(time);
-	private AudioPlayerManager playerManager= new DefaultAudioPlayerManager();
+	private EmbedBuilder builder = new EmbedBuilder();
+	private long time = System.currentTimeMillis();
+	private Random rand = new Random(time);
+	private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
 
+	private static final Logger LOGGER = LogManager.getLogger(BotListener.class);
 	
-	private ZorkManager zorkManager= new ZorkManager();
+	private ZorkManager zorkManager = new ZorkManager();
 	private static final Map<String, Map.Entry<AudioPlayer, TrackScheduler>> players = new HashMap<>();
-	private static User_Vals userVals;
+	private static HashSet<Long> adminUsers = new HashSet<>();
+	private static UserVals userVals;
 
 	private BotTimer limiter;
 	private Timer timer;
 	
 	
 	
-	public Bot_Listener() {
+	public BotListener() {
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		AudioSourceManagers.registerLocalSource(playerManager);
 		builder.setAuthor("Alec Bot", null, "https://i.imgur.com/TT1jeRo.png");
@@ -121,7 +114,7 @@ public class Bot_Listener extends ListenerAdapter
         }
         
         
-        MessageChannel channel = event.getChannel();
+
         Message message = event.getMessage();
         String content = message.getContentRaw(); 
         String[] words=miscUtils.splitWords(content);
@@ -130,20 +123,22 @@ public class Bot_Listener extends ListenerAdapter
         	privateMsg(event, words);
         	return;
         }
-        if(message.getContentRaw().contains("<@&" + ConfigStorage.botHelperID +">")) {
-        	channel.sendMessage("Here").queue();
-        	return;
-        }
+
         
         Guild guild = event.getGuild();
         ScheduledFuture<?> future=null;
         
-        if(userVals == null) userVals = new User_Vals();
+        if(userVals == null) userVals = new UserVals();
 
-        
-        Member user = event.getMember(); 
-        Long id = user.getIdLong();
-        
+		TextChannel channel = (TextChannel) event.getChannel();
+        Member member = event.getMember();
+        Long id = member.getIdLong();
+
+		if(message.getContentRaw().contains("<@&" + ConfigStorage.botHelperID +">")) {
+			channel.sendMessage("Here").queue();
+			return;
+		}
+
         if(id == ConfigStorage.botHelperID && words[0].contentEquals("!help")) {
 			return;
 		}
@@ -153,94 +148,72 @@ public class Bot_Listener extends ListenerAdapter
         try {
  
 	        if(words[0].contentEquals("!ping")) {
+	        	LOGGER.fatal("Test");
+	        	LOGGER.error("Test");
+	        	LOGGER.warn("Test");
+				LOGGER.info("Test");
+				LOGGER.debug("Test");
+				LOGGER.trace("Test");
 	            channel.sendMessage("Pong!").queue();
-	        }	        
+//				channel.sendMessage("```0.33333 Karma has been added to your account!```").queue();
+//				userVals.sqlMigrate(guild);
+	        }
 	        else if(words[0].contentEquals("!start")) {
-	        	String search;
+	        	String[] search;
 	        	if(words[1].contains("facebook.com")) {
-	        		search = miscUtils.getFaceVid(words[1]);
+	        		search = new String[] {miscUtils.getFaceVid(words[1])};
 	        	}
 	        	else if(!words[1].contains("https:") && !words[1].contains("C:")) {
-        			search = YtubeList.doSearch(words[1]);
-        			channel.sendMessage(search).queue();
-        			//System.out.println(search);
-        		}
+        			search = new String[] {YtubeList.doSearch(words[1])};
+        			channel.sendMessage(search[0]).queue();
+	        	}
+	        	else if(words[1].contains("&list") && (words[1].contains("youtube") || words[1].contains("youtu.be"))){
+	        		search = YtubeList.getPlayList(words[1]);
+	        	}
         		else {
-        			search = words[1];
+        			search = new String[] {words[1]};
         		}
+	        	
+	        	if(search.length>1)
+	        		channel.sendMessage("Added playlist of " + search.length + " videos").queue();
+	        	
+	        	
 	        	if(!players.containsKey(guild.getId())||(!guild.getAudioManager().isConnected())) {
-	        		VoiceChannel voicechannel = user.getVoiceState().getChannel();        		
+	        		
+	        		VoiceChannel voicechannel = member.getVoiceState().getChannel();
 	        		AudioSourceManagers.registerRemoteSources(playerManager);        		
 		        	AudioPlayer player = playerManager.createPlayer();
-		        	TrackScheduler trackScheduler=new TrackScheduler(player);
+		        	TrackScheduler trackScheduler = new TrackScheduler(player);
 		        	player.addListener(trackScheduler);
 		        	AudioManager manager = guild.getAudioManager();
-		        	manager.setSendingHandler(new Bot_Audio(player));
+		        	manager.setSendingHandler(new BotAudio(player));
 		        	manager.openAudioConnection(voicechannel);
 		        	players.put(guild.getId(), new AbstractMap.SimpleEntry<>(player,trackScheduler));
-		        	playerManager.loadItem(search, new AudioLoadResultHandler() {
-		        		  @Override
-		        		  public void trackLoaded(AudioTrack track) {
-		        			track.setUserData(channel);
-		        		    trackScheduler.queue(track);
-		        		  }
-		        		  	
-		        		  @Override
-		        		  public void playlistLoaded(AudioPlaylist playlist) {
-		        		    for (AudioTrack track : playlist.getTracks()) {
-		        		      trackScheduler.queue(track);
-		        		    }
-		        		  }
-		
-		        		  @Override
-		        		  public void noMatches() {
-		        			  channel.sendMessage("No matches found for search").queue();
-		        		    // Notify the user that we've got nothing
-		        		  }
-		
-		        		  @Override
-		        		  public void loadFailed(FriendlyException throwable) {
-		        		    // Notify the user that everything exploded
-		        			  channel.sendMessage("Failed to load audio").queue();
-		        			  System.out.println(throwable.toString());
-		        		  }
-		
-		        	});
+		        	
+		        	if(search.length>1)
+		        		trackScheduler.playlistSize = search.length;
+		        		
+		        	for(String track : search) {
+		        		playerManager.loadItem(track, new BotAudioResultHandler(channel, trackScheduler));	
+		        	}
 		        	
 	        	}
 	        	else {
 	        		TrackScheduler trackScheduler=players.get(guild.getId()).getValue();
-	        		System.out.print(words[1]);
-		        	playerManager.loadItemOrdered(guild,search, new AudioLoadResultHandler() {
-		        		  @Override
-		        		  public void trackLoaded(AudioTrack track) {
-		        			  track.setUserData(channel);
-			        		  trackScheduler.queue(track);
-			        		  System.out.println("queue");
-		        		  }
-		
-		        		  @Override
-		        		  public void playlistLoaded(AudioPlaylist playlist) {
-		        		    for (AudioTrack track : playlist.getTracks()) {
-		        		      trackScheduler.queue(track);
-		        		    }
-		        		  }
-		
-		        		  @Override
-		        		  public void noMatches() {
-		        		    // Notify the user that we've got nothing
-		        			  channel.sendMessage("No matches found for search").queue();
-		        		  }
-		
-		        		  @Override
-		        		  public void loadFailed(FriendlyException throwable) {
-		        		    // Notify the user that everything exploded
-		        			  channel.sendMessage("Failed to load audio").queue();
-		        		  }
-		
-		        	});
-		        	
-		        	
+	        		
+	        		if(search.length>1)
+		        		trackScheduler.playlistSize = search.length;
+	        		LOGGER.debug(words[1]);
+	        		for(String track : search) {
+	        			playerManager.loadItemOrdered(guild, track, new BotAudioResultHandler(channel, trackScheduler){
+			        		  @Override
+			        		  public void trackLoaded(AudioTrack track) {
+			        			  track.setUserData(channel);
+				        		  trackScheduler.queue(track);
+				        		  LOGGER.debug("queue");
+			        		  }			
+			        	});
+	        		}     	
 	        	}
 	        	
 	        }
@@ -260,7 +233,7 @@ public class Bot_Listener extends ListenerAdapter
 	        	}
 	        }
 	        else if(words[0].contentEquals("!serverip")) {
-	        	channel.sendMessage("Server ip is: " + miscUtils.getIp() + ":25565").queue();	
+	        	channel.sendMessage("Server ip is: alecserv.com").queue();	
 	        }
 	        else if(words[0].contentEquals("!roll")) {
 				String tempS="Rolled ";
@@ -294,7 +267,7 @@ public class Bot_Listener extends ListenerAdapter
 	        	channel.sendMessage(testStr).queue();
 	        }	
 	        else if(words[0].contentEquals("!zork")) {	        	
-	        	channel.sendMessage(zorkManager.input(user,content.substring(words[0].length()))).queue();
+	        	channel.sendMessage(zorkManager.input(member,content.substring(words[0].length()))).queue();
 	        }
 	        else if(words[0].contentEquals("!default")) {	
 	        	for (int i=0;i<10;i++) {
@@ -354,85 +327,83 @@ public class Bot_Listener extends ListenerAdapter
 	        	}
 	        }
 	        else if(words[0].contentEquals("!balance")) {
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	if(!userVals.balanceSheet.containsKey(id)) {
-	        		System.out.println("noob");
-	        		userVals.balanceSheet.put(id, 0);
-	        	}
-	        	channel.sendMessage(user.getEffectiveName() + " has " + userVals.balanceSheet.get(id) + " dine-in dollars!").queue();
-	        	userVals.saveToFile(SAVE_TYPE.BALANCE);
+				MemberInfo memberInfo;
+				String name;
+	        	if(id == ConfigStorage.developerID && words[1] != null) {
+					memberInfo = ValueStorage.getMemberInfo(guild.getMemberById(Long.parseLong(words[1])));
+					name = guild.getMemberById(Long.parseLong(words[1])).getEffectiveName();
+				}
+				else{
+					memberInfo = ValueStorage.getMemberInfo(member);
+					name = member.getEffectiveName();
+				}
+
+
+	        	channel.sendMessage(name + " has " + memberInfo.getBalance() + " dine-in dollars!").queue();
 	        }	
 	        else if(words[0].contentEquals("!debugAdd")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	
 	        	if(id == ConfigStorage.developerID) {
-	        		if(words[2]==null) {
-	        			userVals.balanceSheet.put(id, userVals.balanceSheet.get(id)+Integer.parseInt(words[1]));
-		        	}
-	        		else {
-	        			long otherId = Long.parseLong(words[2]);
-	        			userVals.balanceSheet.put(otherId, userVals.balanceSheet.get(otherId)+Integer.parseInt(words[1]));
-	        		}
+	        		MemberInfo memberInfo;
+	        		if(words[2] == null)
+						memberInfo = ValueStorage.getMemberInfo(member);
+	        		else
+						memberInfo = ValueStorage.getMemberInfo(guild.getMemberById(Long.parseLong(words[2])));
+
+					memberInfo.setBalance(memberInfo.getBalance() + Integer.parseInt(words[1]));
+					memberInfo.update();
 	        	}
 	        	else {
 	        		channel.sendMessage("No").queue();
 	        	}
-	        	userVals.saveToFile(SAVE_TYPE.BALANCE);
 	        }
 	        else if(words[0].contentEquals("!debugSet")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	if(id == ConfigStorage.developerID) {
-	        		if(words[2]==null) {
-	        			userVals.balanceSheet.put(id, Integer.parseInt(words[1]));
-		        	}
-	        		else {
-	        			long otherId = Long.parseLong(words[2]);
-	        			userVals.balanceSheet.put(otherId, Integer.parseInt(words[1]));
-	        		}
-	        	}
+				if(id == ConfigStorage.developerID) {
+					MemberInfo memberInfo;
+					if(words[2] == null)
+						memberInfo = ValueStorage.getMemberInfo(member);
+					else
+						memberInfo = ValueStorage.getMemberInfo(guild.getMemberById(Long.parseLong(words[2])));
+
+					memberInfo.setBalance(Integer.parseInt(words[1]));
+					memberInfo.update();
+				}
 	        	else {
 	        		channel.sendMessage("No").queue();
 	        	}
-	        	userVals.saveToFile(SAVE_TYPE.BALANCE);
 	        }
 	        else if(words[0].contentEquals("!bet")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	if(words[1]==null) {
 	        		channel.sendMessage("Need an argument!").queue();
 	        		return;
 	        	}
-	        	if(!userVals.balanceSheet.containsKey(id)) {
-	        		System.out.println("noob");
-	        		userVals.balanceSheet.put(user.getIdLong(), 0);
-	        	}
+
+	        	MemberInfo memberInfo = ValueStorage.getMemberInfo(member);
+
 	        	int rolled = -1;
 	        	time=System.currentTimeMillis();
 	        	rand=new Random(time);
 	        	try {
-	        		int bet = (int) Integer.parseInt(words[1]);
+	        		int bet = Integer.parseInt(words[1]);
 	        		
-	        		if(bet<=userVals.balanceSheet.get(id)&&bet>0) {
+	        		if(bet<=memberInfo.getBalance()&&bet>0) {
 	        			rolled= rand.nextInt(bet*2+1);
-	        			if(rolled>bet) { channel.sendMessage(user.getEffectiveName() + " has earned " + (rolled-bet) + " dine-in dollars!").queue();}
-	        			if(rolled<bet) { channel.sendMessage(user.getEffectiveName() + " has lost " + (bet-rolled) + " dine-in dollars!").queue();}
-	        			if(rolled==bet) { channel.sendMessage(user.getEffectiveName() + " has broke even!").queue();}
-	        			userVals.balanceSheet.put(id, userVals.balanceSheet.get(id)+(rolled-bet));
-	        		}else if(bet>userVals.balanceSheet.get(id)&&bet>0){channel.sendMessage("Not enough dine-in dollars to bet!").queue();}
+	        			if(rolled>bet) { channel.sendMessage(member.getEffectiveName() + " has earned " + (rolled-bet) + " dine-in dollars!").queue();}
+	        			if(rolled<bet) { channel.sendMessage(member.getEffectiveName() + " has lost " + (bet-rolled) + " dine-in dollars!").queue();}
+	        			if(rolled==bet) { channel.sendMessage(member.getEffectiveName() + " has broke even!").queue();}
+						memberInfo.setBalance(memberInfo.getBalance() + (rolled-bet));
+						memberInfo.update();
+	        		}else if(bet>memberInfo.getBalance()&&bet>0){channel.sendMessage("Not enough dine-in dollars to bet!").queue();}
 	        		else {channel.sendMessage("No negative bets!").queue();}
 	        	}
 	        	catch(NumberFormatException e) {e.printStackTrace();}
-	        	userVals.saveToFile(SAVE_TYPE.BALANCE);
 	        }	     
 	        else if(words[0].contentEquals("!blackjack")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	if(words[1]==null) {
 	        		channel.sendMessage("Need an argument!").queue();
 	        		return;
 	        	}
-	        	if(!userVals.balanceSheet.containsKey(id)) {
-	        		System.out.println("noob");
-	        		userVals.balanceSheet.put(user.getIdLong(), 0);
-	        	}
+
+				MemberInfo memberInfo = ValueStorage.getMemberInfo(member);
 	        	
 	        	int bet;
 	        	String action;
@@ -448,108 +419,95 @@ public class Bot_Listener extends ListenerAdapter
 	        	if(bet<0) {
 	        		channel.sendMessage("No negative bets!").queue();
 	        	}
-	        	else if((bet>userVals.balanceSheet.get(id))){
+	        	else if((bet>memberInfo.getBalance())){
 	        		channel.sendMessage("Not enough dine-in dollars to bet!").queue();
 	        	}
 	        	else {
-	        		channel.sendMessage(GameHandler.blackJackHandler(user.getEffectiveName(), bet, action, id)).queue();
+	        		channel.sendMessage(GameHandler.blackJackHandler(member.getEffectiveName(), bet, action, id)).queue();
 	        	}        	
 	        	int payOut = GameHandler.recievePayOut(id);
-	        	if(payOut!=0) {userVals.balanceSheet.put(id, userVals.balanceSheet.get(id)+payOut);}
+	        	if(payOut!=0) {memberInfo.setBalance(memberInfo.getBalance() + payOut);}
 	        	
-	        	userVals.saveToFile(SAVE_TYPE.BALANCE);
+	        	memberInfo.update();
 	        }	
 	        else if(words[0].contentEquals("!moneyPls")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	if(!userVals.balanceSheet.containsKey(id)) {
-	        		System.out.println("noob");
-	        		userVals.balanceSheet.put(id, 0);
-	        	}
+				MemberInfo memberInfo = ValueStorage.getMemberInfo(member);
 	        	
-	        	if(userVals.balanceSheet.get(id)<5) {
-	        		userVals.balanceSheet.put(id, userVals.balanceSheet.get(id)+1);
+	        	if(memberInfo.getBalance()<5) {
+					memberInfo.setBalance(memberInfo.getBalance() + 1);
 	        		channel.sendMessage("Dine-in dollar added").queue();
-	        		userVals.saveToFile(SAVE_TYPE.BALANCE);
+					memberInfo.update();
 	        	}
-	        }
-	        else if(words[0].contentEquals("!view")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	if(id == ConfigStorage.developerID) {
-	        		long otherId = Long.parseLong(words[1]);
-	        		channel.sendMessage((guild.getMemberById(otherId)).getEffectiveName() + " has " + userVals.balanceSheet.get(otherId) + " dine-in dollars!").queue();
-	        	}
-	        	else {channel.sendMessage("No").queue();}
 	        }
 	        else if(words[0].contentEquals("!reserve")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	userVals.createRoom(guild, user.getIdLong(), Integer.parseInt(words[2]), channel, words[1], Arrays.copyOfRange(words, 3, words.length));
+	        	userVals.createRoom(guild, member.getIdLong(), Integer.parseInt(words[2]), channel, words[1], Arrays.copyOfRange(words, 3, words.length));
 	        }
 	        else if(words[0].contentEquals("!courses")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	userVals.allCourses(channel);
 	        }
 	        else if(words[0].contentEquals("!class")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-	        	if(words[1].contentEquals("add")){
-	        		userVals.addCourses(channel, user.getIdLong(), words);
+				if(words[1] == null || words[1].contentEquals("help")){
+					channel.sendMessage("```diff\nValid subcommands are:\n+ add (or enroll)\n+ drop\n+ list\n+ sudo create (administrators only)\n+ sudo remove (administrators only)```").queue();
+				}
+	        	else if(words[1].contentEquals("add") || words[1].contentEquals("enroll")){
+					userVals.enrollCourses(member, channel, Arrays.copyOfRange(words, 2, words.length));
 	        	}
 	        	else if(words[1].contentEquals("drop")){
-	        		userVals.dropCourses(channel, user.getIdLong(), words);
+	        		userVals.dropCourses(member, channel, Arrays.copyOfRange(words, 2, words.length));
 	        	}
 	        	else if(words[1].contentEquals("list")){
-	        		userVals.listCourses(channel, user.getIdLong());
-	        	}
-				else{
-					channel.sendMessage("```diff\\n- COMMAND NOT RECOGNIZED -\\n```").queue();
+	        		userVals.listCourses(member, channel);
+	        	}else if(words[1].contentEquals("sudo")){
+					if(!member.getPermissions().contains(Permission.ADMINISTRATOR)){
+						channel.sendMessage("```diff\n- ADMINISTRATORS ONLY -```").queue();
+						return;
+					}
+					if(!adminUsers.contains(id)){
+						channel.sendMessage(miscUtils.asciiArchive(10)).queue();
+						adminUsers.add(id);
+					}
+					if(words[2].contentEquals("create")){
+						userVals.addCourse(channel, Arrays.copyOfRange(words, 3, words.length));
+					}else if(words[2].contentEquals("remove")) {
+						userVals.removeCourse(channel, Arrays.copyOfRange(words, 3, words.length));
+					}
+				}else{
+					channel.sendMessage("```diff\n- SUBCOMMAND NOT RECOGNIZED -\n\nValid subcommands are:\n+ add (or enroll)\n+ drop\n+ list\n+ sudo create (administrators only)\n+ sudo remove (administrators only)```").queue();
 				}
 	        }
 	        else if(words[0].contentEquals("!karma")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
+
 	        	if(id == ConfigStorage.developerID && words[1]!=null) {
 	        		Long id2 = Long.parseLong(words[1]);
-	        		Member user2 = guild.getMemberById(id2);
-	        		if(!userVals.karmaCounter.containsKey(id2)) {
-		        		userVals.karmaCounter.put(id2,  new KarmaCounts(0,0));
-		        		userVals.saveToFile(SAVE_TYPE.KARMA);
-		        	}
-	        		channel.sendMessage(user2.getEffectiveName() 
-	        				+ " has " + userVals.karmaCounter.get(id2).getKarma().toString() + " karma!\n"
-    						+ "Upvotes: " + userVals.karmaCounter.get(id2).upvotes + "\nDownvotes: " +  userVals.karmaCounter.get(id2).downvotes).queue();
+	        		Member member2 = guild.getMemberById(id2);
+					MemberInfo memberInfo = ValueStorage.getMemberInfo(member2);
+
+	        		channel.sendMessage(member2.getEffectiveName()
+	        				+ " has " + memberInfo.getKarma() + " karma!\n"
+    						+ "Upvotes: " + memberInfo.getUpvotes() + "\nDownvotes: " +  memberInfo.getDownvotes()).queue();
 	        	}
 	        	else {
-		        			        	
-		        	if(!userVals.karmaCounter.containsKey(id)) {
-		        		userVals.karmaCounter.put(id,  new KarmaCounts(0,0));
-		        		userVals.saveToFile(SAVE_TYPE.KARMA);
-		        	}
-		        	channel.sendMessage(user.getEffectiveName() + " has " + userVals.karmaCounter.get(id).getKarma().toString() + " karma!\n"
-		        						+ "Upvotes: " + userVals.karmaCounter.get(id).upvotes + "\nDownvotes: " +  userVals.karmaCounter.get(id).downvotes).queue();
+					MemberInfo memberInfo = ValueStorage.getMemberInfo(member);
+					channel.sendMessage(member.getEffectiveName()
+							+ " has " + memberInfo.getKarma() + " karma!\n"
+							+ "Upvotes: " + memberInfo.getUpvotes() + "\nDownvotes: " +  memberInfo.getDownvotes()).queue();
 	        	}
 	        	
 	        }
 	        else if(words[0].contentEquals("!highscores")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	channel.sendMessage(userVals.leaderBoard(guild)).queue();
-	        	
 	        }
 	        else if(words[0].contentEquals("!lowscores")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	channel.sendMessage(userVals.leaderBoardDown(guild)).queue();
-	        	
 	        }
 	        else if(words[0].contentEquals("!veryhighscores")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	channel.sendMessage(userVals.leaderBoardUp(guild)).queue();
-	        	
 	        }
 	        else if(words[0].contentEquals("!meanscores")){
-	        	if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 	        	channel.sendMessage(userVals.leaderBoardMean(guild)).queue();
-	        	
 	        }
 	        else if(words[0].contentEquals("!job")){
-	        	miscUtils.jobHelper(userVals.companyList, channel, words);
-	        	userVals.saveToFile(SAVE_TYPE.COMPANIES);
+//	        	miscUtils.jobHelper(userVals.companyList, channel, words);
 	        }
 	       
 	        else if(words[0].contentEquals("!help")) {
@@ -577,16 +535,14 @@ public class Bot_Listener extends ListenerAdapter
 	        }
         }
 		catch(IllegalArgumentException e) {
-			e.printStackTrace();
-			channel.sendMessage("```diff\n- " + user.getEffectiveName() + " is not in the sudoers file. \n- This incident will be reported.\n```").queue();
-		}
-        catch(IOException e) {
-			channel.sendMessage("```diff\n- TASK FAILED SUCCESSFULLY -\n```").queue();
+			channel.sendMessage("```diff\n- " + member.getEffectiveName() + " is not in the sudoers file. \n- This incident will be reported.\n```").queue();
+			LOGGER.error("IllegalArgumentException with input:" + Arrays.toString(words));
+			LOGGER.error(e, e);
 		}
         catch(Exception e) {
         	channel.sendMessage("```diff\n- SEGMENTATION FAULT (core dumped) -\n```").queue();
-        	System.out.println(e.getClass());
-        	e.printStackTrace();
+			LOGGER.error("Exception with input:" + Arrays.toString(words));
+			LOGGER.error(e, e);
         }
     }
 	
@@ -600,17 +556,19 @@ public class Bot_Listener extends ListenerAdapter
 		Message msg = event.getChannel().retrieveMessageById(event.getMessageIdLong()).complete();
 		String name = event.getReactionEmote().getName().toLowerCase();
 		
-		if(userVals == null) {userVals = new User_Vals();}
+		if(userVals == null) {userVals = new UserVals();}
 		
-//		System.out.println(event.getReactionEmote().getName());
-		Long id = event.getUser().getIdLong();
-		Long author = msg.getAuthor().getIdLong();
-		
+		Long upvoterId = event.getUser().getIdLong();
+		long authorId = msg.getAuthor().getIdLong();
+		Member author = guild.getMemberById(authorId);
+		Member upvoter = guild.getMemberById(upvoterId);
+
+		if(author == null) return;
 		if (event.getUser().isBot()) {return;}
-		if(author.equals(id)) {
-			if(!id.equals(lastUser)) {
-				event.getChannel().sendMessage("Nice try " + guild.getMemberById(id).getEffectiveName());
-				lastUser = id.longValue();
+		if(authorId == upvoterId) {
+			if(!upvoterId.equals(lastUser)) {
+				event.getChannel().sendMessage("Nice try " + upvoter.getEffectiveName());
+				lastUser = upvoterId;
 			}
 			if(name.equals("upvote") || name.equals("downvote")) {
 				event.getReaction().removeReaction(event.getUser()).queue();
@@ -618,28 +576,16 @@ public class Bot_Listener extends ListenerAdapter
 			}
 			return;
 		}
-		
-		
-		if(!userVals.karmaCounter.containsKey(author)) {
-    		System.out.println("noob");
-    		userVals.karmaCounter.put(author,  new KarmaCounts(0,0));
-    		userVals.saveToFile(SAVE_TYPE.KARMA);;
-    	}
-		
-		if(!userVals.karmaCounter.containsKey(id)) {
-    		System.out.println("noob");
-    		userVals.karmaCounter.put(id,  new KarmaCounts(0,0));
-    		userVals.saveToFile(SAVE_TYPE.KARMA);;
-    	}
-		
-		KarmaCounts voter = userVals.karmaCounter.get(id);
-		
+
+		MemberInfo authorMemberInfo = ValueStorage.getMemberInfo(author);
+
 		if(event.getReactionEmote().getName().toLowerCase().contentEquals("upvote")) {
-			if(voter.upLeft>0) {
-				voter.upLeft--;
-				userVals.karmaCounter.get(author).upvotes++;
-				System.out.println(guild.getMemberById(id).getEffectiveName() + " upvoted " +  guild.getMemberById(author).getEffectiveName());
-				miscUtils.karmaLog(guild.getMemberById(id).getEffectiveName() + " upvoted " +  guild.getMemberById(author).getEffectiveName());
+			if(authorMemberInfo.upvotesLeft>0) {
+				authorMemberInfo.upvotesLeft--;
+				authorMemberInfo.upvote();
+				authorMemberInfo.update();
+				LOGGER.info(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
+				miscUtils.karmaLog(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
 			}
 			else {
 				event.getReaction().removeReaction(event.getUser()).queue();
@@ -650,101 +596,100 @@ public class Bot_Listener extends ListenerAdapter
 		}
 		
 		if(event.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
-			if(voter.downLeft>0) {
-				voter.downLeft--;
-				userVals.karmaCounter.get(author).downvotes++;	
-				System.out.println(guild.getMemberById(id).getEffectiveName() + " downvoted " +  guild.getMemberById(author).getEffectiveName());
-				miscUtils.karmaLog(guild.getMemberById(id).getEffectiveName() + " downvoted " +  guild.getMemberById(author).getEffectiveName());
+			if(authorMemberInfo.downvotesLeft>0) {
+				authorMemberInfo.downvotesLeft--;
+				authorMemberInfo.downvote();
+				authorMemberInfo.update();
+				LOGGER.info(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
+				miscUtils.karmaLog(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
 			}
 			else {
 				event.getReaction().removeReaction(event.getUser()).queue();
 				skip = true;
-				return;
 			}
 					
 		}
-		
-		userVals.saveToFile(SAVE_TYPE.KARMA);
-		return;
+
 	}
 	
 	@Override
 	public void onGuildMessageReactionRemove(@Nonnull GuildMessageReactionRemoveEvent event) {
 		
-		Guild guild = event.getGuild();
-		if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-		Message msg = event.getChannel().retrieveMessageById(event.getMessageIdLong()).complete();
-		String name = event.getReactionEmote().getName().toLowerCase();
-		if(userVals == null) {userVals = new User_Vals();}
-		
-//		System.out.println(event.getReactionEmote().getName());
-		Long id = event.getUser().getIdLong();
-		Long author = msg.getAuthor().getIdLong();
-		
-		if(skip) {
-			skip = false;
-			return;
-		}
-		if (event.getUser().isBot()) {return;}
-		if(author.equals(id)) {
-			if(name.equals("upvote") || name.equals("downvote")) {
-				event.getReaction().removeReaction(event.getUser()).queue();
-				skip = true;
-			}
-			
-			return;
-		}
-		
-		
-		
-		if(!userVals.karmaCounter.containsKey(author)) {
-    		System.out.println("noob");
-    		userVals.karmaCounter.put(author,  new KarmaCounts(0,0));
-    		userVals.saveToFile(SAVE_TYPE.KARMA);
-    	}
-		
-		if(!userVals.karmaCounter.containsKey(id)) {
-    		System.out.println("noob");
-    		userVals.karmaCounter.put(id,  new KarmaCounts(0,0));
-    		userVals.saveToFile(SAVE_TYPE.KARMA);
-    	}
-		
-
-		if(event.getReactionEmote().getName().toLowerCase().contentEquals("upvote")) {
-//			System.out.println(guild.getMemberById(id).getEffectiveName());
-			if(userVals.karmaCounter.get(author).upvotes > 0) {
-				
-				userVals.karmaCounter.get(author).upvotes--;
-				
-			}
-		}
-		
-		else if(event.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
-			if(userVals.karmaCounter.get(author).downvotes > 0) {
-				userVals.karmaCounter.get(author).downvotes--;
-			}			
-		}
-			
-		
-		userVals.saveToFile(SAVE_TYPE.KARMA);
-		return;
+		return; //TODO check if valid removal
+//		Guild guild = event.getGuild();
+//		if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
+//		Message msg = event.getChannel().retrieveMessageById(event.getMessageIdLong()).complete();
+//		String name = event.getReactionEmote().getName().toLowerCase();
+//		if(userVals == null) {userVals = new User_Vals();}
+//		
+////		System.out.println(event.getReactionEmote().getName());
+//		Long id = event.getUser().getIdLong();
+//		Long author = msg.getAuthor().getIdLong();
+//		
+//		if(skip) {
+//			skip = false;
+//			return;
+//		}
+//		if (event.getUser().isBot()) {return;}
+//		if(author.equals(id)) {
+//			if(name.equals("upvote") || name.equals("downvote")) {
+//				event.getReaction().removeReaction(event.getUser()).queue();
+//				skip = true;
+//			}
+//			
+//			return;
+//		}
+//		
+//		
+//		
+//		if(!userVals.karmaCounter.containsKey(author)) {
+//    		System.out.println("noob");
+//    		userVals.karmaCounter.put(author,  new KarmaCounts(0,0));
+//    		userVals.saveToFile(SAVE_TYPE.KARMA);
+//    	}
+//		
+//		if(!userVals.karmaCounter.containsKey(id)) {
+//    		System.out.println("noob");
+//    		userVals.karmaCounter.put(id,  new KarmaCounts(0,0));
+//    		userVals.saveToFile(SAVE_TYPE.KARMA);
+//    	}
+//		
+//
+//		if(event.getReactionEmote().getName().toLowerCase().contentEquals("upvote")) {
+////			System.out.println(guild.getMemberById(id).getEffectiveName());
+//			if(userVals.karmaCounter.get(author).upvotes > 0) {
+//				
+//				userVals.karmaCounter.get(author).upvotes--;
+//				
+//			}
+//		}
+//		
+//		else if(event.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
+//			if(userVals.karmaCounter.get(author).downvotes > 0) {
+//				userVals.karmaCounter.get(author).downvotes--;
+//			}			
+//		}
+//			
+//		
+//		userVals.saveToFile(SAVE_TYPE.KARMA);
+//		return;
 	}
 	
 	@Override
 	public void onTextChannelCreate(TextChannelCreateEvent event) {
 
-		if(userVals==null) userVals = new User_Vals(); 
+		if(userVals==null) userVals = new UserVals();
 		
 		TextChannel tChannel = event.getChannel();
 		Category category = tChannel.getParent();
 		if(category!=null && category.getName().toLowerCase().contentEquals("classes")) {
-			userVals.courseList.put(tChannel.getName().toUpperCase(), tChannel);
+//			userVals.courseList.put(tChannel.getName().toUpperCase(), tChannel);
 		}
 	}
 
 	@Override
 	public void onGuildMemberUpdateNickname(@Nonnull GuildMemberUpdateNicknameEvent event) {
-		if(userVals==null) userVals = new User_Vals(); 
+		if(userVals==null) userVals = new UserVals();
 		if(event.getGuild().getIdLong() != ConfigStorage.mainGuildID) return;
 		
 		

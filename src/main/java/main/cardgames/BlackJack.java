@@ -1,4 +1,4 @@
-package main.cardGames;
+package main.cardgames;
 
 public class BlackJack implements CardGame{	
 	private final Deck deck;

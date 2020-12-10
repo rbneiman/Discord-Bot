@@ -4,23 +4,19 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.ResourceId;
+import com.google.api.services.youtube.model.Playlist;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
-import com.google.api.services.youtube.model.Thumbnail;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 public class YtubeList {
@@ -32,12 +28,11 @@ public class YtubeList {
      * to make YouTube Data API requests.
      */
     private static YouTube youtube;
-
+    private static String apiKey;
+    
     /**
      * Initialize a YouTube object to search for videos on YouTube. Then
      * display the name and thumbnail image of each video in the result set.
-     *
-     * @param args command line args.
      */
     public static void setup() {
         // Read the developer key from the properties file.
@@ -53,6 +48,8 @@ public class YtubeList {
                 public void initialize(HttpRequest request) throws IOException {
                 }
             }).setApplicationName("search test").build();
+            
+            apiKey = ConfigStorage.googleApiKey;
 
         } catch (GoogleJsonResponseException e) {
             System.err.println("There was a service error: " + e.getDetails().getCode() + " : "
@@ -77,7 +74,6 @@ public class YtubeList {
         // Set your developer key from the {{ Google Cloud Console }} for
         // non-authenticated requests. See:
         // {{ https://cloud.google.com/console }}
-        String apiKey = ConfigStorage.googleApiKey;
         search.setKey(apiKey);
         search.setQ(word);
 
@@ -102,5 +98,73 @@ public class YtubeList {
         return "https://www.youtube.com/watch?v=" + searchResultList.get(0).getId().getVideoId();
         
     }
+    
+    
+    public static String[] getPlayList(String link) {
+
+    	String[] linkSplit = link.split("&");
+    	String playlistId = null;
+    	int startIndex = 0;
+    	for(String param : link.split("&")) {
+    		if(param.contains("list"))
+    			playlistId = param.substring(5);
+    		if(param.contains("index")) {
+    			startIndex = Integer.parseInt(param.substring(6));
+    		}
+    	}
+    	
+    	if(playlistId == null) return new String[] {link};
+    	
+    	
+    	YouTube.PlaylistItems.List playlistItemSearch;
+    	
+    	try {
+    		playlistItemSearch = youtube.playlistItems().list("contentDetails");
+		} catch (IOException e) {
+			System.err.println("Youtube io error");
+			return null;
+		}
+
+    	
+    	playlistItemSearch.setKey(apiKey);
+    	playlistItemSearch.setFields("items(contentDetails/videoId)");
+    	playlistItemSearch.setPlaylistId(playlistId);
+    	playlistItemSearch.setMaxResults(100L);
+    	
+    	PlaylistItemListResponse playlistResponse;
+		try {
+			playlistResponse = playlistItemSearch.execute();
+		} catch (IOException e) {
+			System.err.println("Youtube io error 2");
+			return null;
+		}
+    	
+		if(playlistResponse.getItems().size() == 0)
+			return new String[] {link};
+		
+		
+		List<PlaylistItem> playlistItemList = playlistResponse.getItems();
+    	
+		
+		int i = 1;
+		ArrayList<String> out = new ArrayList<>();
+		for(PlaylistItem item : playlistItemList) {
+			if(i>=startIndex) {
+				String videoId = item.getContentDetails().getVideoId();
+				out.add("https://www.youtube.com/watch?v=" + videoId);
+			}
+			i++;
+		}
+		System.out.print(out);
+		
+    	return out.toArray(new String[] {});
+    }
 }
+
+
+
+
+
+
+
 

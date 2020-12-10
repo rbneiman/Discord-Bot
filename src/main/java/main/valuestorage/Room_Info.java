@@ -1,4 +1,4 @@
-package main.valueStorage;
+package main.valuestorage;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -38,12 +38,12 @@ public class Room_Info {
 	
 	VoiceChannel channel;
 	MessageChannel fromChannel;
-	User_Vals parent;
+	UserVals parent;
 	long ownerId;
 	long roomId;
 	int size;
 	
-	public Room_Info(User_Vals parent, Guild g, long owner, MessageChannel fromChannel, int size, String name, String[] others){
+	public Room_Info(UserVals parent, Guild g, long owner, MessageChannel fromChannel, int size, String name, String[] others){
 		this.parent = parent;
 		this.ownerId = owner;
 		this.fromChannel = fromChannel;
@@ -89,7 +89,7 @@ public class Room_Info {
         
 	}
 	
-	public Room_Info(User_Vals parent, long owner, VoiceChannel channel){
+	public Room_Info(UserVals parent, long owner, VoiceChannel channel){
 		this.channel = channel;
 		this.fromChannel = null;
 		this.parent = parent;

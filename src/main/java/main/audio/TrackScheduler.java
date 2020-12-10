@@ -12,8 +12,9 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.MessageChannel;
 
 public class TrackScheduler extends AudioEventAdapter {
-	private final AudioPlayer player;
+	  private final AudioPlayer player;
 	  private final Queue<AudioTrack> tracks;
+	  public int playlistSize = 0;
 	  
 	  public TrackScheduler(AudioPlayer player) {
 		  this.player=player;
@@ -56,7 +57,7 @@ public class TrackScheduler extends AudioEventAdapter {
 			case CLEANUP:
 				return;
 			case REPLACED:
-				break;
+				return;
 			default:
 				break;
 		}
@@ -94,15 +95,20 @@ public class TrackScheduler extends AudioEventAdapter {
 		if(player.getPlayingTrack()==null) {			
 			player.playTrack(tracks.poll());
 		}
-		else {
+		else if(playlistSize == 0){
 			channel.sendMessage("Added to number " + (tracks.size()) + " in queue").queue();			
 		}	
+		if(playlistSize > 0)
+			playlistSize--;
 	}
 	
 	public boolean skip() {
 		player.stopTrack();
 		if(!tracks.isEmpty()) {
-			player.playTrack(tracks.poll());
+			AudioTrack track = tracks.poll();
+			player.playTrack(track);	
+			MessageChannel channel=(MessageChannel) track.getUserData();
+			channel.sendMessage("Now Playing: "+ track.getInfo().title).queue();
 			return true;
 		}
 		return false;

@@ -1,4 +1,4 @@
-package main.valueStorage;
+package main.valuestorage;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;

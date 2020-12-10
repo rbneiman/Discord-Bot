@@ -1,4 +1,4 @@
-package main.valueStorage;
+package main.valuestorage;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

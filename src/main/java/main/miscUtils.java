@@ -12,13 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TimerTask;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import main.valueStorage.CompanyInfo;
+import main.valuestorage.CompanyInfo;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -234,10 +228,17 @@ public class miscUtils {
 	}
 	
 	
+	public static void auditLogSearch(Guild guild) {
+//		AuditLogPaginationAction auditLogs = guild.retrieveAuditLogs();
+//		auditLogs.type(ActionType.MESSAGE_UPDATE);
+//		auditLogs.queue( (entries) ->
+//        {
+//
+//        });
+	}
 	
 	
-	//Fortnite dance 0-9
-	//WARNING: CONTAINS CRINGE
+	//Fortnite dance 0-9, lecture 10
 	public static String asciiArchive(int id) {
 		String out = "";
 		switch (id){
@@ -430,6 +431,14 @@ public class miscUtils {
 						"⠀⠀⠀⠀⣛⠀⠀⠀⠀⠀⠀⠛⠿⠿⠿\r\n" + 
 						"⠀⠀⠀⠛⠛";
 			break;
+			case(10):
+				out = "```\nWe trust you have received the usual lecture from the local System\n" +
+						"Administrator. It usually boils down to these three things:\n" +
+						"\n" +
+						"    #1) Respect the privacy of others.\n" +
+						"    #2) Think before you type.\n" +
+						"    #3) With great power comes great responsibility.```";
+				break;
 			default:
 				out = "String ID not found!";
 		}

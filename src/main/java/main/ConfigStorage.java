@@ -1,12 +1,16 @@
 package main;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.json.*;
-
 
 public class ConfigStorage {
-	
+	private static Logger LOGGER = LogManager.getLogger("ConfigStorage");
+
 	public static boolean initialized = false;
 	
 	public static String discordToken;
@@ -51,7 +55,7 @@ public class ConfigStorage {
 			
 			initialized = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error(e);
 		}
 	}
 }

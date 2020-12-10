@@ -1,4 +1,4 @@
-package main.valueStorage;
+package main.valuestorage;
 
 import java.io.Serializable;
 
@@ -20,6 +20,7 @@ public class KarmaCounts implements Serializable{
 		this.downvotes = downvotes;
 		this.goldTimeLeft = 0;
 		this.goldTokens = 0;
+		this.timerPerTick = 1;
 	}
 	
 	public Integer getKarma() {
