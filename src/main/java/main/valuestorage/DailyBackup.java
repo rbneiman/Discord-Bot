@@ -1,20 +1,21 @@
 package main.valuestorage;
 
+import main.MiscUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.TimerTask;
 
 
 public class DailyBackup extends TimerTask{
-	private UserVals vals;
-	
+	private static final Logger LOGGER = LogManager.getLogger(DailyBackup.class);
+
 	public void run() {
-//		User_Vals.backup++;
-//		vals.saveBackup(User_Vals.backup);
-//		vals.saveToFile(SAVE_TYPE.ALL);
-		System.out.println("BACKUP COMPLETE");
+		DatabaseManager.backupDatabase();
+		LOGGER.info("BACKUP COMPLETE");
     }
 	
-	public DailyBackup(UserVals vals){
+	public DailyBackup(){
 		super();
-		this.vals = vals;
 	}
 }

@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class MiscUtils {
-	private static Logger LOGGER = LogManager.getLogger(MiscUtils.class);
+	private static final Logger LOGGER = LogManager.getLogger(MiscUtils.class);
 
 	public static String[] splitWords(String s) {
 		String[] words=new String[10];

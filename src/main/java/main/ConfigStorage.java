@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 
 
 public class ConfigStorage {
-	private static Logger LOGGER = LogManager.getLogger("ConfigStorage");
+	private static Logger LOGGER = LogManager.getLogger(ConfigStorage.class);
 
 	public static boolean initialized = false;
 	
@@ -51,8 +51,7 @@ public class ConfigStorage {
 			developerID = (Long) configJson.get("developer_id");
 			botHelperID = (Long) configJson.get("bot_helper_id");
 			specialUserID = (Long) configJson.get("special_user_id");
-			System.out.println(developerID);
-			
+			LOGGER.trace("Using dev id " + developerID);
 			initialized = true;
 		} catch (Exception e) {
 			LOGGER.error(e);

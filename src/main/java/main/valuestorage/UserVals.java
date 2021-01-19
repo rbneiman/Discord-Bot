@@ -43,14 +43,7 @@ public class UserVals {
 
 
 		Timer timer = new Timer();
-		DailyBackup backupTask = new DailyBackup(this);
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				DatabaseManager.backupDatabase();
-			}
-		}, 3600000 * 24, 3600000 * 24); //24 hours
-//		timer.schedule(backupTask, 10000, 10000);
+		timer.schedule(new DailyBackup(), 3600000 * 24, 3600000 * 24); //24 hours
 	}
 
 	public void sqlMigrate(Guild g){
@@ -205,7 +198,7 @@ public class UserVals {
 				channelId = Long.parseLong(channelIdString);
 				TextChannel courseChannel = channel.getGuild().getTextChannelById(channelId);
 				if (courseChannel == null) {
-					channel.sendMessage(channelIdString + "is not a valid channel!").queue();
+					channel.sendMessage(channelIdString + " is not a valid channel!").queue();
 				} else {
 					if (ValueStorage.removeCourse(courseChannel)) {
 						removedString.append(" ").append(courseChannel.getName().toUpperCase());

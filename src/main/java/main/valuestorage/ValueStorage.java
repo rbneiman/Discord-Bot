@@ -120,6 +120,14 @@ public class ValueStorage {
                 override = channel.createPermissionOverride(member).complete();
             override.getManager().setDeny(Permission.MESSAGE_READ).queue();
             DatabaseManager.removeCourseAction(member, channel);
+        }else{
+            ArrayList<CourseInfo>  infos = DatabaseManager.getCourseInfosWithCondition("WHERE guild_id = " + member.getGuild().getIdLong() + " AND channel_id = " + channel.getIdLong(), null);
+            if(infos.size() != 0){
+                PermissionOverride override = channel.getPermissionOverride(member);
+                if(override == null)
+                    return;
+                override.getManager().setDeny(Permission.MESSAGE_READ).queue();
+            }
         }
 
     }
