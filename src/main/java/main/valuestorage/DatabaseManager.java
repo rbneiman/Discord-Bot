@@ -21,8 +21,8 @@ import java.util.ArrayList;
 public class DatabaseManager {
     public static DatabaseManager INSTANCE = new DatabaseManager();
     private static Logger LOGGER = LogManager.getLogger("DatabaseManager");
-    public static final String url = "jdbc:sqlite:C:/sqlite/db/BotData.db";
-    public static final String urlBackup = "C:/sqlite/db/BotDataBak/BotData";
+    public static final String url = "jdbc:sqlite:D:/SQL/SQLite/AlecBot/BotData.db";
+    public static final String urlBackup = "D:/SQL/SQLite/AlecBot/Bak/BotData";
     public static Connection conn;
 
     private DatabaseManager(){
@@ -292,7 +292,7 @@ public class DatabaseManager {
         FileOutputStream out = null;
         LOGGER.debug(backupURL);
         try {
-            in = new FileInputStream("C:/sqlite/db/BotData.db");
+            in = new FileInputStream("D:/SQL/SQLite/AlecBot/BotData.db");
             out = new FileOutputStream(backupURL);
 
             int c;

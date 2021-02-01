@@ -1,5 +1,6 @@
 package main.valuestorage;
 
+import main.Main;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 
@@ -133,5 +134,25 @@ public class ValueStorage {
     }
 
 
+    public static void populateKarma(){
 
+    }
+
+    public static void fill_courses(){
+        Guild guild = Main.api.getGuildById(644716660921466912L);
+        if(guild == null)
+            return;
+        for(TextChannel textChannel : guild.getCategoryById(695848897058439180L).getTextChannels()){
+            if(textChannel.getIdLong() != 704482740476706826L && textChannel.getIdLong() != 748250756506845265L){
+                addCourse(textChannel);
+                for(PermissionOverride permissionOverride : textChannel.getPermissionOverrides()){
+                    if(permissionOverride.isMemberOverride() && permissionOverride.getAllowed().contains(Permission.MESSAGE_READ)){
+                        enrollCourse(permissionOverride.getMember(), textChannel);
+                    }
+
+                }
+            }
+
+        }
+    }
 }

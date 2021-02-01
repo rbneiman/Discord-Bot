@@ -289,7 +289,10 @@ public class UserVals {
 		c.sendMessage(temp).queue();
 		
 	}
-	
+
+
+
+
 //	@SuppressWarnings("unchecked")
 //	public static <k, v> HashMap<k, v> getFromFile(SAVE_TYPE t){
 //		try {

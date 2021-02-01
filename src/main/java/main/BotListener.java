@@ -155,7 +155,8 @@ public class BotListener extends ListenerAdapter
 				LOGGER.debug("Test");
 				LOGGER.trace("Test");
 	            channel.sendMessage("Pong!").queue();
-	            DatabaseManager.backupDatabase();
+//	            DatabaseManager.backupDatabase();
+//	            ValueStorage.fill_courses();
 //				channel.sendMessage("```0.33333 Karma has been added to your account!```").queue();
 //				userVals.sqlMigrate(guild);
 	        }
@@ -580,11 +581,13 @@ public class BotListener extends ListenerAdapter
 
 		MemberInfo authorMemberInfo = ValueStorage.getMemberInfo(author);
 
+		MemberInfo upvoterMemberInfo = ValueStorage.getMemberInfo(upvoter);
 		if(event.getReactionEmote().getName().toLowerCase().contentEquals("upvote")) {
-			if(authorMemberInfo.upvotesLeft>0) {
-				authorMemberInfo.upvotesLeft--;
+			if(upvoterMemberInfo.upvotesLeft>0) {
+				upvoterMemberInfo.upvotesLeft--;
 				authorMemberInfo.upvote();
 				authorMemberInfo.update();
+				upvoterMemberInfo.update();
 				LOGGER.info(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
 				MiscUtils.karmaLog(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
 			}
@@ -597,10 +600,11 @@ public class BotListener extends ListenerAdapter
 		}
 		
 		if(event.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
-			if(authorMemberInfo.downvotesLeft>0) {
-				authorMemberInfo.downvotesLeft--;
+			if(upvoterMemberInfo.downvotesLeft>0) {
+				upvoterMemberInfo.downvotesLeft--;
 				authorMemberInfo.downvote();
 				authorMemberInfo.update();
+				upvoterMemberInfo.update();
 				LOGGER.info(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
 				MiscUtils.karmaLog(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
 			}
