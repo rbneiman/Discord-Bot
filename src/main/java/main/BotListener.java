@@ -554,7 +554,7 @@ public class BotListener extends ListenerAdapter
 	public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
 		
 		Guild guild = event.getGuild();
-		if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
+//		if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
 		Message msg = event.getChannel().retrieveMessageById(event.getMessageIdLong()).complete();
 		String name = event.getReactionEmote().getName().toLowerCase();
 		
@@ -576,16 +576,16 @@ public class BotListener extends ListenerAdapter
 				event.getReaction().removeReaction(event.getUser()).queue();
 				skip = true;
 			}
-			return;
+			return; 
 		}
 
 		MemberInfo authorMemberInfo = ValueStorage.getMemberInfo(author);
 
 		MemberInfo upvoterMemberInfo = ValueStorage.getMemberInfo(upvoter);
 		if(event.getReactionEmote().getName().toLowerCase().contentEquals("upvote")) {
-			if(upvoterMemberInfo.upvotesLeft>0) {
+			if(upvoterMemberInfo.canVote(authorMemberInfo, true)) {
 				upvoterMemberInfo.upvotesLeft--;
-				authorMemberInfo.upvote();
+				authorMemberInfo.upvote(upvoterMemberInfo);
 				authorMemberInfo.update();
 				upvoterMemberInfo.update();
 				LOGGER.info(upvoter.getEffectiveName() + " upvoted " +  author.getEffectiveName());
@@ -600,9 +600,9 @@ public class BotListener extends ListenerAdapter
 		}
 		
 		if(event.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
-			if(upvoterMemberInfo.downvotesLeft>0) {
+			if(upvoterMemberInfo.canVote(authorMemberInfo, false)) {
 				upvoterMemberInfo.downvotesLeft--;
-				authorMemberInfo.downvote();
+				authorMemberInfo.downvote(upvoterMemberInfo);
 				authorMemberInfo.update();
 				upvoterMemberInfo.update();
 				LOGGER.info(upvoter.getEffectiveName() + " downvoted " +  author.getEffectiveName());
@@ -696,13 +696,6 @@ public class BotListener extends ListenerAdapter
 	public void onGuildMemberUpdateNickname(@Nonnull GuildMemberUpdateNicknameEvent event) {
 		if(userVals==null) userVals = new UserVals();
 		if(event.getGuild().getIdLong() != ConfigStorage.mainGuildID) return;
-		
-		
-//		System.out.println(event.getMember().getEffectiveName());
-		if(event.getMember().getIdLong() == ConfigStorage.specialUserID && !event.getNewNickname().contentEquals("ammar")) {
-			event.getMember().modifyNickname("ammar").queueAfter(60, TimeUnit.SECONDS);
-		}
-		
 	}
 }
 

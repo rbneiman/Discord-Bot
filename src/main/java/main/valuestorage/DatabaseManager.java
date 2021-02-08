@@ -107,6 +107,18 @@ public class DatabaseManager {
         }
     }
 
+    public static void addVoteAction(VoteAction action, String notesString){
+        try {
+            PreparedStatement st = conn.prepareStatement("INSERT INTO vote_actions (voter_id, author_id, guild_id, is_upvote, notes)" +
+                    String.format("Values (%d,%d,%d,'%s',(?));", action.voterId, action.authorId, action.guildId, action.isUpvote));
+            st.setString(1, notesString);
+            st.execute();
+            st.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void removeCourseAction(Member member, MessageChannel channel){
         try {
             Statement st = conn.createStatement();
@@ -227,6 +239,35 @@ public class DatabaseManager {
                     CourseInfo temp = new CourseInfo(rs.getLong("channel_id"),
                             rs.getLong("guild_id"),
                             rs.getString("name")
+                    );
+                    out.add(temp);
+                }while (rs.next());
+            }
+            st.close();
+            return out;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
+    public static ArrayList<VoteAction> getVoteActionsWithCondition(String condition, String[] args){
+        ArrayList<VoteAction> out = new ArrayList<>();
+        try {
+            PreparedStatement  st = conn.prepareStatement("SELECT * FROM vote_actions " + condition);
+            for(int i=0; args!=null && i<args.length; i++)
+                st.setString(i + 1, args[i]);
+            ResultSet rs = st.executeQuery();
+            if (!rs.next() ) {
+                return out;
+            }else{
+                do {
+                    VoteAction temp = new VoteAction(rs.getLong("event_id"),
+                            rs.getLong("voter_id"),
+                            rs.getLong("author_id"),
+                            rs.getLong("guild_id"),
+                            rs.getTimestamp("datetime"),
+                            rs.getBoolean("is_upvote")
                     );
                     out.add(temp);
                 }while (rs.next());

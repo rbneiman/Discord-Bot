@@ -1,8 +1,21 @@
 package main.valuestorage;
 
+import main.ConfigStorage;
+import main.Main;
+import net.dv8tion.jda.api.entities.Member;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+
 public class MemberInfo {
+	private static final Logger LOGGER = LogManager.getLogger(MemberInfo.class);
+
+	private static final float ABUSE_FRACTION = 0.35F;
+	private static final int ABUSE_NUMBER = 5;
 	public final long memberId;
 	public final long guildId;
+	public final String effectiveName;
 
 	private int upvotes;
 	private int downvotes;
@@ -29,7 +42,9 @@ public class MemberInfo {
 		this.downvotesLeft = VoteStuff.calcLimitDown(this);
 		this.ticksPerIncrement = 1;
 		this.balance = balance;
+		effectiveName = Main.api.getGuildById(guildId).getMemberById(memberId).getEffectiveName();
 	}
+
 
 	public int getBalance() {
 		return balance;
@@ -44,18 +59,20 @@ public class MemberInfo {
 		return upvotes;
 	}
 
-	public void upvote(){
+	public void upvote(MemberInfo voter){
 		upvotesChanged = true;
 		this.upvotes++;
+		ValueStorage.addVoteAction(voter, this, true);
 	}
 
 	public int getDownvotes() {
 		return downvotes;
 	}
 
-	public void downvote(){
+	public void downvote(MemberInfo author){
 		downvotesChanged = true;
 		this.downvotes++;
+		ValueStorage.addVoteAction(this, author, false);
 	}
 
 	public int getKarma(){
@@ -64,6 +81,36 @@ public class MemberInfo {
 
 	public int getKarmaUnbounded() {
 		return upvotes - downvotes;
+	}
+
+	public boolean canVote(MemberInfo author, boolean isUpvote){
+		if(isUpvote){
+			if(this.upvotesLeft<=0 && this.memberId != ConfigStorage.developerID)
+				return false;
+
+			ArrayList<VoteAction> actionsWithAuthor = ValueStorage.getVoteActions(this, author, true);
+			ArrayList<VoteAction> actionsOverall = ValueStorage.getVoteActions(this, author, true);
+			int tempInt = actionsWithAuthor.size();
+			float tempFloat = ((float) actionsWithAuthor.size())/((float) actionsOverall.size());
+			if(actionsWithAuthor.size() >= ABUSE_NUMBER && ((float) actionsWithAuthor.size())/((float) actionsOverall.size()) > ABUSE_FRACTION){
+				LOGGER.info(this.effectiveName + " hit abuse threshold upvoting " + author.effectiveName);
+				return false;
+			}
+
+		}else{
+			if(this.downvotesLeft<=0 && this.memberId != ConfigStorage.developerID)
+				return false;
+
+			ArrayList<VoteAction> actionsWithAuthor = ValueStorage.getVoteActions(this, author, false);
+			ArrayList<VoteAction> actionsOverall = ValueStorage.getVoteActions(this, author, false);
+
+			if(actionsWithAuthor.size() > ABUSE_NUMBER && ((float) actionsWithAuthor.size())/((float) actionsOverall.size()) > ABUSE_FRACTION){
+				LOGGER.info(this.effectiveName + " hit abuse threshold downvoting " + author.effectiveName);
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public void update(){

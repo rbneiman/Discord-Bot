@@ -13,10 +13,7 @@ public class ValueStorage {
     //user_id -> MemberInfo
     public static final ConcurrentHashMap<Long,UserInfo> userInfoMap = new ConcurrentHashMap<>();
 
-//    //guild_id -> map( member_id -> List(CourseActions) )
-//    public static final ConcurrentHashMap<Long,ConcurrentHashMap<Long,ArrayList<CourseAction>>> guildCourseActionMap = new ConcurrentHashMap<>();
-//    //guild_id -> CourseInfo
-//    public static final ConcurrentHashMap<Long,CourseInfo> courseInfoMap = new ConcurrentHashMap<>();
+
 
     public static MemberInfo getMemberInfo(Member member){
         if(!guildMemberMap.containsKey(member.getGuild().getIdLong()))
@@ -133,26 +130,23 @@ public class ValueStorage {
 
     }
 
-
-    public static void populateKarma(){
-
+    public static void addVoteAction(MemberInfo voter, MemberInfo author, boolean isUpvote){
+        String notesString = voter.effectiveName + (isUpvote ? " upvoted " : " downvoted ") + author.effectiveName;
+        DatabaseManager.addVoteAction(new VoteAction(voter.memberId, author.memberId, voter.guildId, isUpvote), notesString);
     }
 
-    public static void fill_courses(){
-        Guild guild = Main.api.getGuildById(644716660921466912L);
-        if(guild == null)
-            return;
-        for(TextChannel textChannel : guild.getCategoryById(695848897058439180L).getTextChannels()){
-            if(textChannel.getIdLong() != 704482740476706826L && textChannel.getIdLong() != 748250756506845265L){
-                addCourse(textChannel);
-                for(PermissionOverride permissionOverride : textChannel.getPermissionOverrides()){
-                    if(permissionOverride.isMemberOverride() && permissionOverride.getAllowed().contains(Permission.MESSAGE_READ)){
-                        enrollCourse(permissionOverride.getMember(), textChannel);
-                    }
+    public static ArrayList<VoteAction> getVoteActions(Member voter){
+        ArrayList<VoteAction> out = DatabaseManager.getVoteActionsWithCondition("WHERE voter_id = " + voter.getIdLong() + " AND guild_id = " + voter.getGuild().getIdLong(), null);
+        return out;
+    }
 
-                }
-            }
+    public static ArrayList<VoteAction> getVoteActions(Member voter, boolean isUpvote){
+        ArrayList<VoteAction> out = DatabaseManager.getVoteActionsWithCondition("WHERE voter_id = " + voter.getIdLong() + " AND guild_id = " + voter.getGuild().getIdLong() + " AND is_upvote = " + isUpvote, null);
+        return out;
+    }
 
-        }
+    public static ArrayList<VoteAction> getVoteActions(MemberInfo voter, MemberInfo author, boolean isUpvote){
+        ArrayList<VoteAction> out = DatabaseManager.getVoteActionsWithCondition("WHERE voter_id = " + voter.memberId + " AND guild_id = " + voter.guildId + " AND author_id = " + author.memberId + " AND is_upvote = '" + isUpvote + "'", null);
+        return out;
     }
 }
