@@ -14,7 +14,7 @@ public class Main {
 
 	public static JDA api;
     public static void main(String[] args) throws LoginException {
-
+		System.setProperty("sun.stdout.encoding", "UTF-8");
 		ConfigStorage.getConfig();
     	
     	if(!ConfigStorage.initialized) {

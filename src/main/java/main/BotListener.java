@@ -225,8 +225,12 @@ public class BotListener extends ListenerAdapter
 	        	player.setPaused(true);
 	        }
 	        else if(words[0].contentEquals("!play")) {
-	        	AudioPlayer player=players.get(guild.getId()).getKey();
-	        	player.setPaused(false);
+	        	if(players.containsKey(guild.getId())){
+					AudioPlayer player=players.get(guild.getId()).getKey();
+					player.setPaused(false);
+				}else{
+					channel.sendMessage("No audio to play. Did you mean \"!start\" ?").queue();
+				}
 	        }
 	        else if(words[0].contentEquals("!skip")) {
 	        	TrackScheduler trackScheduler=players.get(guild.getId()).getValue();
@@ -621,63 +625,6 @@ public class BotListener extends ListenerAdapter
 	public void onGuildMessageReactionRemove(@Nonnull GuildMessageReactionRemoveEvent event) {
 		
 		return; //TODO check if valid removal
-//		Guild guild = event.getGuild();
-//		if(guild.getIdLong() != ConfigStorage.mainGuildID) return;
-//		Message msg = event.getChannel().retrieveMessageById(event.getMessageIdLong()).complete();
-//		String name = event.getReactionEmote().getName().toLowerCase();
-//		if(userVals == null) {userVals = new User_Vals();}
-//		
-////		System.out.println(event.getReactionEmote().getName());
-//		Long id = event.getUser().getIdLong();
-//		Long author = msg.getAuthor().getIdLong();
-//		
-//		if(skip) {
-//			skip = false;
-//			return;
-//		}
-//		if (event.getUser().isBot()) {return;}
-//		if(author.equals(id)) {
-//			if(name.equals("upvote") || name.equals("downvote")) {
-//				event.getReaction().removeReaction(event.getUser()).queue();
-//				skip = true;
-//			}
-//			
-//			return;
-//		}
-//		
-//		
-//		
-//		if(!userVals.karmaCounter.containsKey(author)) {
-//    		System.out.println("noob");
-//    		userVals.karmaCounter.put(author,  new KarmaCounts(0,0));
-//    		userVals.saveToFile(SAVE_TYPE.KARMA);
-//    	}
-//		
-//		if(!userVals.karmaCounter.containsKey(id)) {
-//    		System.out.println("noob");
-//    		userVals.karmaCounter.put(id,  new KarmaCounts(0,0));
-//    		userVals.saveToFile(SAVE_TYPE.KARMA);
-//    	}
-//		
-//
-//		if(event.getReactionEmote().getName().toLowerCase().contentEquals("upvote")) {
-////			System.out.println(guild.getMemberById(id).getEffectiveName());
-//			if(userVals.karmaCounter.get(author).upvotes > 0) {
-//				
-//				userVals.karmaCounter.get(author).upvotes--;
-//				
-//			}
-//		}
-//		
-//		else if(event.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
-//			if(userVals.karmaCounter.get(author).downvotes > 0) {
-//				userVals.karmaCounter.get(author).downvotes--;
-//			}			
-//		}
-//			
-//		
-//		userVals.saveToFile(SAVE_TYPE.KARMA);
-//		return;
 	}
 	
 	@Override
@@ -688,15 +635,10 @@ public class BotListener extends ListenerAdapter
 		TextChannel tChannel = event.getChannel();
 		Category category = tChannel.getParent();
 		if(category!=null && category.getName().toLowerCase().contentEquals("classes")) {
-//			userVals.courseList.put(tChannel.getName().toUpperCase(), tChannel);
 		}
 	}
 
-	@Override
-	public void onGuildMemberUpdateNickname(@Nonnull GuildMemberUpdateNicknameEvent event) {
-		if(userVals==null) userVals = new UserVals();
-		if(event.getGuild().getIdLong() != ConfigStorage.mainGuildID) return;
-	}
+
 }
 
 

@@ -89,7 +89,7 @@ public class MemberInfo {
 				return false;
 
 			ArrayList<VoteAction> actionsWithAuthor = ValueStorage.getVoteActions(this, author, true);
-			ArrayList<VoteAction> actionsOverall = ValueStorage.getVoteActions(this, author, true);
+			ArrayList<VoteAction> actionsOverall = ValueStorage.getVoteActions(author, true);
 			int tempInt = actionsWithAuthor.size();
 			float tempFloat = ((float) actionsWithAuthor.size())/((float) actionsOverall.size());
 			if(actionsWithAuthor.size() >= ABUSE_NUMBER && ((float) actionsWithAuthor.size())/((float) actionsOverall.size()) > ABUSE_FRACTION){
@@ -102,7 +102,7 @@ public class MemberInfo {
 				return false;
 
 			ArrayList<VoteAction> actionsWithAuthor = ValueStorage.getVoteActions(this, author, false);
-			ArrayList<VoteAction> actionsOverall = ValueStorage.getVoteActions(this, author, false);
+			ArrayList<VoteAction> actionsOverall = ValueStorage.getVoteActions(author, false);
 
 			if(actionsWithAuthor.size() > ABUSE_NUMBER && ((float) actionsWithAuthor.size())/((float) actionsOverall.size()) > ABUSE_FRACTION){
 				LOGGER.info(this.effectiveName + " hit abuse threshold downvoting " + author.effectiveName);

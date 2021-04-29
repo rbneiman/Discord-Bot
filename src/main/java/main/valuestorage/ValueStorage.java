@@ -140,8 +140,8 @@ public class ValueStorage {
         return out;
     }
 
-    public static ArrayList<VoteAction> getVoteActions(Member voter, boolean isUpvote){
-        ArrayList<VoteAction> out = DatabaseManager.getVoteActionsWithCondition("WHERE voter_id = " + voter.getIdLong() + " AND guild_id = " + voter.getGuild().getIdLong() + " AND is_upvote = " + isUpvote, null);
+    public static ArrayList<VoteAction> getVoteActions(MemberInfo author, boolean isUpvote){
+        ArrayList<VoteAction> out = DatabaseManager.getVoteActionsWithCondition("WHERE author_id = " + author.memberId + " AND guild_id = " + author.guildId + " AND is_upvote = '" + isUpvote + "'", null);
         return out;
     }
 

@@ -12,64 +12,19 @@ import java.util.*;
 public class UserVals {
 
 	private static Logger LOGGER = LogManager.getLogger("UserVals");
-	
-	private Guild guild;
-	
-//	public final HashMap<Long,Integer> balanceSheet;
+
+
 	public final HashMap<Long,Room_Info> roomOwners;
-//	public final HashMap<Long,HashSet<String>> coursesEnrolled;
-//	public final HashMap<String,TextChannel> courseList; //names are all uppercase
-//	public final HashMap<Long,KarmaCounts> karmaCounter;
-//	public final HashMap<String,CompanyInfo> companyList;
 	public final VoteStuff vote_stuff;
-	public static Long backup;
-	public static String botDataPath;
 
 	
 	public UserVals(){
-		this.guild = Main.api.getGuildById(ConfigStorage.mainGuildID);
 		roomOwners  = new HashMap<Long,Room_Info>();
 		vote_stuff = new VoteStuff(this);
-		
-
-		for(VoiceChannel v : this.guild.getCategoryById(ConfigStorage.privateVoiceCategory).getVoiceChannels()) {
-			if(v.getMembers().isEmpty()) {
-				this.guild.getCategoryById(ConfigStorage.privateVoiceCategory).getVoiceChannels().forEach(k -> k.delete().queue());
-			}
-			else {
-				roomOwners.put(v.getIdLong(), new Room_Info(this,v.getIdLong(),v));
-			}
-		}
 
 
 		Timer timer = new Timer();
 		timer.schedule(new DailyBackup(), 3600000 * 24, 3600000 * 24); //24 hours
-	}
-
-	public void sqlMigrate(Guild g){
-//		HashSet<Long> createdUsers = new HashSet<>();
-//		for(Map.Entry<Long, KarmaCounts> entry : karmaCounter.entrySet()){
-//			long memberId = entry.getKey();
-//			KarmaCounts karmaCounts = entry.getValue();
-//
-//			if(!createdUsers.contains(entry.getKey())){
-//				UserInfo user = new UserInfo(memberId, 0);
-//				DatabaseManager.addUser(user);
-//				createdUsers.add(memberId);
-//			}
-//
-//			MemberInfo member = new MemberInfo(memberId, g.getIdLong(), karmaCounts.upvotes, karmaCounts.downvotes, 0);
-//			DatabaseManager.addMember(member);
-//		}
-
-//		for(Map.Entry<Long, Integer> entry: balanceSheet.entrySet()){
-//			Member member = g.getMemberById(entry.getKey());
-//			if(member!=null){
-//				MemberInfo memberInfo = ValueStorage.getMemberInfo(member);
-//				memberInfo.setBalance(entry.getValue());
-//				memberInfo.update();
-//			}
-//		}
 	}
 	
 	
@@ -289,110 +244,4 @@ public class UserVals {
 		c.sendMessage(temp).queue();
 		
 	}
-
-
-
-
-//	@SuppressWarnings("unchecked")
-//	public static <k, v> HashMap<k, v> getFromFile(SAVE_TYPE t){
-//		try {
-//			File hFile;
-//
-//			if(t==SAVE_TYPE.BALANCE) {
-//				hFile = new File(ConfigStorage.botdataPath + "playerBalances"+backup+".txt");
-//			}else if(t==SAVE_TYPE.COURSE) {
-//				hFile = new File(ConfigStorage.botdataPath + "courses"+backup+".txt");
-//			}else if(t==SAVE_TYPE.KARMA) {
-//				hFile = new File(ConfigStorage.botdataPath + "Karma"+backup+".txt");
-//			}else if(t==SAVE_TYPE.COMPANIES) {
-//				hFile = new File(ConfigStorage.botdataPath + "companies"+backup+".txt");
-//			}else {
-//				return null;
-//			}
-//
-//			FileInputStream fis = new FileInputStream(hFile);
-//			ObjectInputStream ois = new ObjectInputStream(fis);
-//
-//
-//			HashMap<k, v> h = (HashMap<k, v>) ois.readObject();
-//			ois.close();
-//			return h;
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		return null;
-//	}
-//
-//	private static <k, v> void saveToFile(HashMap<k,v> hMap, String fileName){
-//
-//		try {
-//			File hFile = new File(fileName);
-//
-//			FileOutputStream fos = new FileOutputStream(hFile);
-//			ObjectOutputStream oos = new ObjectOutputStream(fos);
-//
-//
-//			oos.writeObject(hMap);
-//			fos.close();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-	
-	
-	
-//	public void saveToFile(SAVE_TYPE t){
-//
-//		if(t==SAVE_TYPE.BALANCE) {
-////			saveToFile(balanceSheet,ConfigStorage.botdataPath + "playerBalances" + backup + ".txt");
-//		}else if(t==SAVE_TYPE.COURSE) {
-//			saveToFile(coursesEnrolled, ConfigStorage.botdataPath + "courses" + backup + ".txt");
-//		}else if(t==SAVE_TYPE.KARMA) {
-////			saveToFile(karmaCounter, ConfigStorage.botdataPath + "Karma" + backup + ".txt");
-//		}else if(t==SAVE_TYPE.COMPANIES) {
-//			saveToFile(companyList, ConfigStorage.botdataPath + "companies" + backup + ".txt");
-//		}else if(t==SAVE_TYPE.ALL) {
-////			saveToFile(balanceSheet, ConfigStorage.botdataPath + "playerBalances" + backup + ".txt");
-//			saveToFile(coursesEnrolled, ConfigStorage.botdataPath + "courses" + backup + ".txt");
-////			saveToFile(karmaCounter, ConfigStorage.botdataPath + "Karma" + backup + ".txt");
-//			saveToFile(companyList, ConfigStorage.botdataPath + "companies" + backup + ".txt");
-//		}
-//
-//	}
-//
-//
-//	public Long getBackup() {
-//		try {
-//			File hFile = new File(ConfigStorage.botdataPath + "backup.txt");
-//
-//
-//			FileInputStream fis = new FileInputStream(hFile);
-//			ObjectInputStream ois = new ObjectInputStream(fis);
-//
-//
-//			Long h = (Long) ois.readObject();
-//			ois.close();
-//			return h;
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		return null;
-//
-//	}
-//
-//	public void saveBackup(Long backup) {
-//		try {
-//			File hFile = new File(ConfigStorage.botdataPath + "backup.txt");
-//			FileOutputStream fos = new FileOutputStream(hFile);
-//			ObjectOutputStream oos = new ObjectOutputStream(fos);
-//			oos.writeObject(backup);
-//	        fos.close();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-//
-//
 }
