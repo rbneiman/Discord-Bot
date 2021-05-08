@@ -17,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DatabaseManager {
     public static DatabaseManager INSTANCE = new DatabaseManager();
@@ -323,6 +324,50 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void updateMemberName(MemberName memberName){
+        try {
+            PreparedStatement st = conn.prepareStatement(
+                    String.format("UPDATE member_names SET name = (?) WHERE member_id = %d;", memberName.memberId));
+            st.setString(1, memberName.name);
+            st.execute();
+            st.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void addMemberName(MemberName memberName){
+        try {
+            PreparedStatement st = conn.prepareStatement("INSERT INTO member_names (member_id, name)" +
+                    String.format("Values (%d,(?));", memberName.memberId));
+            st.setString(1, memberName.name);
+            st.execute();
+            st.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static HashMap<Long, String> getMemberNames(){
+        HashMap<Long, String> out = new HashMap<>();
+        try {
+            PreparedStatement  st = conn.prepareStatement("SELECT * FROM member_names");
+            ResultSet rs = st.executeQuery();
+            if (!rs.next() ) {
+                return out;
+            }else{
+                do {
+                    out.put(rs.getLong("member_id"), rs.getString("name"));
+                }while (rs.next());
+            }
+            st.close();
+            return out;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return out;
     }
 
     public static void backupDatabase(){

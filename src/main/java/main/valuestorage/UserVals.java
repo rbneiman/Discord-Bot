@@ -244,4 +244,11 @@ public class UserVals {
 		c.sendMessage(temp).queue();
 		
 	}
+
+	public void updateMemberNames(Guild g){
+		List<Member> members = g.getMembers();
+		ArrayList<MemberName> memberNames = new ArrayList<>();
+		members.forEach(member -> memberNames.add(new MemberName(member)));
+		ValueStorage.updateMemberNames(memberNames);
+	}
 }

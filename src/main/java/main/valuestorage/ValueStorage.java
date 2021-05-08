@@ -1,10 +1,13 @@
 package main.valuestorage;
 
+
 import main.Main;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ValueStorage {
@@ -148,5 +151,17 @@ public class ValueStorage {
     public static ArrayList<VoteAction> getVoteActions(MemberInfo voter, MemberInfo author, boolean isUpvote){
         ArrayList<VoteAction> out = DatabaseManager.getVoteActionsWithCondition("WHERE voter_id = " + voter.memberId + " AND guild_id = " + voter.guildId + " AND author_id = " + author.memberId + " AND is_upvote = '" + isUpvote + "'", null);
         return out;
+    }
+
+    public static void updateMemberNames(List<MemberName> memberNames){
+        HashMap<Long, String> existingMembers = DatabaseManager.getMemberNames();
+        for(MemberName memberName : memberNames){
+            if(existingMembers.containsKey(memberName.memberId)){
+                DatabaseManager.updateMemberName(memberName);
+            }else{
+                DatabaseManager.addMemberName(memberName);
+            }
+        }
+
     }
 }

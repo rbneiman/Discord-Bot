@@ -155,6 +155,7 @@ public class BotListener extends ListenerAdapter
 				LOGGER.debug("Test");
 				LOGGER.trace("Test");
 	            channel.sendMessage("Pong!").queue();
+//	            userVals.updateMemberNames(guild);
 //	            DatabaseManager.backupDatabase();
 //	            ValueStorage.fill_courses();
 //				channel.sendMessage("```0.33333 Karma has been added to your account!```").queue();
