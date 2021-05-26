@@ -69,10 +69,10 @@ public class MemberInfo {
 		return downvotes;
 	}
 
-	public void downvote(MemberInfo author){
+	public void downvote(MemberInfo voter){
 		downvotesChanged = true;
 		this.downvotes++;
-		ValueStorage.addVoteAction(this, author, false);
+		ValueStorage.addVoteAction(voter, this, false);
 	}
 
 	public int getKarma(){
