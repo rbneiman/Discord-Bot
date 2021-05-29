@@ -17,6 +17,8 @@ public class ConfigStorage {
 	public static String googleApiKey;
 	
 	public static String botdataPath;
+	public static String databasePath;
+	public static String databaseBackupPath;
 	
 	public static long mainGuildID;
 	
@@ -40,7 +42,9 @@ public class ConfigStorage {
 			googleApiKey = (String) configJson.get("google_apikey");
 			
 			botdataPath = (String) configJson.get("botdata_path");
-			
+			databasePath = (String) configJson.get("database_path");
+			databaseBackupPath = (String) configJson.get("database_backup_path");
+
 			mainGuildID = (Long) configJson.get("main_guild_id");
 			
 			classCategory = (Long) configJson.get("class_category");

@@ -1,5 +1,6 @@
 package main;
 
+import main.valuestorage.DatabaseManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -21,7 +22,8 @@ public class Main {
     		LOGGER.fatal("Config file either invalid or missing! Exiting... ");
     		return;
     	}
-    	
+
+		DatabaseManager.startDB(ConfigStorage.databasePath, ConfigStorage.databaseBackupPath);
     	YtubeList.setup();
     	
     	api = JDABuilder.createDefault(ConfigStorage.discordToken)

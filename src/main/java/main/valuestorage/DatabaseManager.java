@@ -22,18 +22,23 @@ import java.util.HashMap;
 public class DatabaseManager {
     public static DatabaseManager INSTANCE = new DatabaseManager();
     private static Logger LOGGER = LogManager.getLogger("DatabaseManager");
-    public static final String url = "jdbc:sqlite:D:/SQL/SQLite/AlecBot/BotData.db";
-    public static final String urlBackup = "D:/SQL/SQLite/AlecBot/Bak/BotData";
-    public static Connection conn;
+//    public static final String url = "jdbc:sqlite:D:/SQL/SQLite/AlecBot/BotData.db";
+//    public static final String urlBackup = "D:/SQL/SQLite/AlecBot/Bak/BotData";
+    private static String urlBackup;
+    private static Connection conn;
 
-    private DatabaseManager(){
+    public static void startDB(String url, String urlBackup){
         Connection temp = null;
+        DatabaseManager.urlBackup = urlBackup;
         try {
-            temp = DriverManager.getConnection(url);
+            temp = DriverManager.getConnection("jdbc:sqlite:" + url);
         } catch (final Exception e) {
             e.printStackTrace();
+            LOGGER.error("Database path does not exist: " + url);
+            return;
         }
         conn = temp;
+        LOGGER.info("Database connected");
     }
 
     public static ArrayList<MemberInfo> getMemberTemplate(){
@@ -350,6 +355,7 @@ public class DatabaseManager {
         }
     }
 
+
     public static HashMap<Long, String> getMemberNames(){
         HashMap<Long, String> out = new HashMap<>();
         try {
@@ -370,8 +376,13 @@ public class DatabaseManager {
         return out;
     }
 
+
     public static void backupDatabase(){
         //TODO better backup functionality
+        if(urlBackup == null){
+            LOGGER.warn("Backup path null, daily backup cancelled");
+            return;
+        }
         Instant now = Instant.now();
         String backupURL = urlBackup + now.truncatedTo(ChronoUnit.MINUTES).toString().replace(":","-") + ".db";
         FileInputStream in = null;

@@ -2,7 +2,9 @@
 	"discord_token": " ",
 	"google_apikey": " ",
 	
-	"botdata_path": " ",	
+	"botdata_path": " ",
+	"database_path": "",
+	"database_backup_path": "",
 	
 	"main_guild_id":  -1,	
 	
