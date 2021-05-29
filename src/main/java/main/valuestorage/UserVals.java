@@ -159,7 +159,7 @@ public class UserVals {
 						removedString.append(" ").append(courseChannel.getName().toUpperCase());
 						removed = true;
 					}else{
-						channel.sendMessage("Course" + courseChannel.getName() +"  does not exist!").queue();
+						channel.sendMessage("Course " + courseChannel.getName() +"  does not exist!").queue();
 					}
 				}
 			} catch (NumberFormatException e) {

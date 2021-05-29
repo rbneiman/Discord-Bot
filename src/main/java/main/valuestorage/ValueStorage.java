@@ -87,6 +87,7 @@ public class ValueStorage {
             CourseInfo courseInfo = new CourseInfo(channel.getIdLong(), channel.getGuild().getIdLong(), channel.getName().toUpperCase());
             DatabaseManager.removeCourseInfo(courseInfo);
             DatabaseManager.removeCourseActionsWithCondition("WHERE channel_id = " + channel.getIdLong(), null);
+            channel.getMemberPermissionOverrides().forEach(override -> override.getManager().setDeny(Permission.MESSAGE_READ).queue());
             return true;
         }else{
             return false;

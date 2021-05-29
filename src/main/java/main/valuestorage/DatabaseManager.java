@@ -139,8 +139,7 @@ public class DatabaseManager {
     public static void removeCourseInfo(CourseInfo courseInfo) {
         try {
             PreparedStatement st = conn.prepareStatement("DELETE FROM course_info WHERE " +
-                    String.format("channel_id = %d AND guild_id = %d AND name = (?) ;",  courseInfo.channelId, courseInfo.guildId));
-            st.setString(1, courseInfo.name);
+                    String.format("channel_id = %d AND guild_id = %d;",  courseInfo.channelId, courseInfo.guildId));
             st.execute();
             st.close();
         } catch (SQLException e) {
