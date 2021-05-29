@@ -288,7 +288,7 @@ public class DatabaseManager {
 
     public static void removeCourseActionsWithCondition(String condition, String[] args) {
         try {
-            PreparedStatement  st = conn.prepareStatement("DELETE * FROM course_actions " + condition + ";");
+            PreparedStatement  st = conn.prepareStatement("DELETE FROM course_actions " + condition + ";");
             for(int i=0; args!=null && i<args.length; i++)
                 st.setString(i + 1, args[i]);
             st.execute();
@@ -300,7 +300,7 @@ public class DatabaseManager {
 
     public static void removeCourseInfosWithCondition(String condition, String[] args) {
         try {
-            PreparedStatement  st = conn.prepareStatement("DELETE * FROM course_info " + condition + ";");
+            PreparedStatement  st = conn.prepareStatement("DELETE FROM course_info " + condition + ";");
             for(int i=0; args!=null && i<args.length; i++)
                 st.setString(i + 1, args[i]);
             st.execute();
