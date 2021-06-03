@@ -22,7 +22,7 @@ import java.util.HashMap;
 public class DatabaseManager {
     public static DatabaseManager INSTANCE = new DatabaseManager();
     private static Logger LOGGER = LogManager.getLogger("DatabaseManager");
-//    public static final String url = "jdbc:sqlite:D:/SQL/SQLite/AlecBot/BotData.db";
+    private static String url;
 //    public static final String urlBackup = "D:/SQL/SQLite/AlecBot/Bak/BotData";
     private static String urlBackup;
     private static Connection conn;
@@ -37,6 +37,7 @@ public class DatabaseManager {
             LOGGER.error("Database path does not exist: " + url);
             return;
         }
+        DatabaseManager.url = url;
         conn = temp;
         LOGGER.info("Database connected");
     }
@@ -388,7 +389,7 @@ public class DatabaseManager {
         FileOutputStream out = null;
         LOGGER.debug(backupURL);
         try {
-            in = new FileInputStream("D:/SQL/SQLite/AlecBot/BotData.db");
+            in = new FileInputStream(url);
             out = new FileOutputStream(backupURL);
 
             int c;
