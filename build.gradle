@@ -5,17 +5,20 @@ plugins {
 
 mainClassName = 'main.Main'
 
-version = '3.0'
+version = '3.1'
 
 sourceCompatibility = 1.8
 
 repositories {
   jcenter()
   mavenCentral()
+  maven {
+    url "https://m2.dv8tion.net/releases"
+  }
 }
 
 dependencies {
-  compile 'net.dv8tion:JDA:4.2.0_168'
+  compile 'net.dv8tion:JDA:4.3.0_277'
   compile 'com.sedmelluq:lavaplayer:1.3.55'
   compile 'org.apache.httpcomponents:httpclient:4.5.8'
   compile 'net.sourceforge.htmlunit:htmlunit:2.32'
