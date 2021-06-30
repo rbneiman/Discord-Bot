@@ -1,5 +1,6 @@
 package main;
 
+import main.commands.CommandType;
 import main.valuestorage.DatabaseManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -33,6 +34,7 @@ public class Main {
     			.build();
     	
     	api.addEventListener(new BotListener());
+		CommandType test = CommandType.fromString("!help");
     }
 }
     

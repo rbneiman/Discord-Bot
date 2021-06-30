@@ -16,6 +16,7 @@ import main.audio.BotAudioResultHandler;
 import main.audio.BotAudio;
 import main.audio.TrackScheduler;
 import main.cardgames.GameHandler;
+import main.slash.SlashCommandHelper;
 import main.valuestorage.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -23,6 +24,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
@@ -30,6 +32,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 public class BotListener extends ListenerAdapter
 {
@@ -155,6 +158,7 @@ public class BotListener extends ListenerAdapter
 				LOGGER.debug("Test");
 				LOGGER.trace("Test");
 	            channel.sendMessage("Pong!").queue();
+				SlashCommandHelper.createTestCommands(guild);
 //	            userVals.updateMemberNames(guild);
 //	            DatabaseManager.backupDatabase();
 //	            ValueStorage.fill_courses();
@@ -629,7 +633,7 @@ public class BotListener extends ListenerAdapter
 	}
 	
 	@Override
-	public void onTextChannelCreate(TextChannelCreateEvent event) {
+	public void onTextChannelCreate(@NotNull TextChannelCreateEvent event) {
 
 		if(userVals==null) userVals = new UserVals();
 		
@@ -639,7 +643,14 @@ public class BotListener extends ListenerAdapter
 		}
 	}
 
+	@Override
+	public void onSlashCommand(@NotNull SlashCommandEvent event){
+		if(userVals==null) userVals = new UserVals();
 
+		if (event.getName().equals("test")) {
+			event.reply(event.getOption("content").getAsString()).queue(); // reply immediately
+		}
+	}
 }
 
 
