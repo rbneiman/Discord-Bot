@@ -42,7 +42,13 @@ public class MemberInfo {
 		this.downvotesLeft = VoteStuff.calcLimitDown(this);
 		this.ticksPerIncrement = 1;
 		this.balance = balance;
-		effectiveName = Main.api.getGuildById(guildId).getMemberById(memberId).getEffectiveName();
+		Member member = Main.api.getGuildById(guildId).getMemberById(memberId);
+		if(member == null){
+			effectiveName = DatabaseManager.getMemberNames().get(memberId);
+		}else{
+			effectiveName = member.getEffectiveName();
+		}
+
 	}
 
 

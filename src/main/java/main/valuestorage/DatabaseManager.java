@@ -74,6 +74,10 @@ public class DatabaseManager {
             st.execute("INSERT INTO member_info (member_id, guild_id, upvotes, downvotes)" +
                     String.format("Values (%d,%d,%d,%d)", member.memberId, member.guildId, member.getUpvotes(), member.getDownvotes()));
             st.close();
+            PreparedStatement st2 = conn.prepareStatement( "INSERT INTO member_names (member_id, name)" +
+                    String.format("Values (%d,(?))", member.memberId));
+            st2.setString(1, member.effectiveName);
+            st2.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
