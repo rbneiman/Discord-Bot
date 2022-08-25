@@ -275,7 +275,7 @@ public class UserVals implements CommandAction {
 				this.createRoom(guild, member.getIdLong(), Integer.parseInt(words.get(2)), channel, words.get(1), words.subList(3, words.size()));
 				break;
 			case COURSES:
-				this.allCourses(channel);
+				out += this.allCourses(channel);
 				break;
 			case CLASS:
 				if(words.size()<2 || words.get(1).contentEquals("help")){
