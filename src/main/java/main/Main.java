@@ -1,7 +1,9 @@
 package main;
 
+import main.commands.CommandHandler;
 import main.commands.CommandType;
 import main.valuestorage.DatabaseManager;
+import main.valuestorage.UserVals;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -13,7 +15,7 @@ import javax.security.auth.login.LoginException;
 
 public class Main {
 	private static Logger LOGGER = LogManager.getLogger("BotMain");
-
+	private static UserVals userVals;
 	public static JDA api;
     public static void main(String[] args) throws LoginException {
 		System.setProperty("sun.stdout.encoding", "UTF-8");
@@ -31,9 +33,11 @@ public class Main {
     			.setMemberCachePolicy(MemberCachePolicy.ALL)
     			.enableIntents(GatewayIntent.GUILD_MEMBERS)
     			.enableIntents(GatewayIntent.GUILD_PRESENCES)
+				.enableIntents(GatewayIntent.MESSAGE_CONTENT)
     			.build();
-    	
-    	api.addEventListener(new BotListener());
+		userVals = new UserVals();
+		CommandHandler.registerHandlers(api, userVals);
+    	api.addEventListener(new BotListener(userVals));
 		CommandType test = CommandType.fromString("!help");
     }
 }

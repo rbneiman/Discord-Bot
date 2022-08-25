@@ -87,7 +87,7 @@ public class ValueStorage {
             CourseInfo courseInfo = new CourseInfo(channel.getIdLong(), channel.getGuild().getIdLong(), channel.getName().toUpperCase());
             DatabaseManager.removeCourseInfo(courseInfo);
             DatabaseManager.removeCourseActionsWithCondition("WHERE channel_id = " + channel.getIdLong(), null);
-            channel.getMemberPermissionOverrides().forEach(override -> override.getManager().setDeny(Permission.MESSAGE_READ).queue());
+            channel.getMemberPermissionOverrides().forEach(override -> override.getManager().deny(Permission.VIEW_CHANNEL).queue());
             return true;
         }else{
             return false;
@@ -105,8 +105,8 @@ public class ValueStorage {
     public static void enrollCourse(Member member, TextChannel channel){
         PermissionOverride override = channel.getPermissionOverride(member);
         if(override == null)
-            override = channel.createPermissionOverride(member).complete();
-        override.getManager().setAllow(Permission.MESSAGE_READ).queue();
+            override = channel.upsertPermissionOverride(member).complete();
+        override.getManager().grant(Permission.VIEW_CHANNEL).queue();
         ArrayList<CourseAction> actions = DatabaseManager.getCourseActionsWithCondition("WHERE member_id = " + member.getIdLong() + " AND guild_id = " + member.getGuild().getIdLong() + " AND channel_id = " + channel.getIdLong(), null);
         if(actions.size() == 0){
             CourseAction action = new CourseAction(member.getIdLong(), channel.getIdLong(), member.getGuild().getIdLong(), channel.getName().toUpperCase());
@@ -119,8 +119,8 @@ public class ValueStorage {
         if(actions.size() != 0){
             PermissionOverride override = channel.getPermissionOverride(member);
             if(override == null)
-                override = channel.createPermissionOverride(member).complete();
-            override.getManager().setDeny(Permission.MESSAGE_READ).queue();
+                override = channel.upsertPermissionOverride(member).complete();
+            override.getManager().deny(Permission.VIEW_CHANNEL).queue();
             DatabaseManager.removeCourseAction(member, channel);
         }else{
             ArrayList<CourseInfo>  infos = DatabaseManager.getCourseInfosWithCondition("WHERE guild_id = " + member.getGuild().getIdLong() + " AND channel_id = " + channel.getIdLong(), null);
@@ -128,7 +128,7 @@ public class ValueStorage {
                 PermissionOverride override = channel.getPermissionOverride(member);
                 if(override == null)
                     return;
-                override.getManager().setDeny(Permission.MESSAGE_READ).queue();
+                override.getManager().deny(Permission.VIEW_CHANNEL).queue();
             }
         }
 

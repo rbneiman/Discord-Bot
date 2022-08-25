@@ -9,12 +9,11 @@ public class SlashCommandHelper {
 
     /** Test method for creating some guild specific slash commands.
      *
-     * @param guild The guild to create the slash commands in.
      */
-    public static void createTestCommands(Guild guild){
-
-        guild.updateCommands()
+    public static void createTestCommands(JDA jda){
+        jda.updateCommands()
                 .addCommands(
+                    CommandDataHelper.PING.value,
                     CommandDataHelper.START.value,
                     CommandDataHelper.STOP.value,
                     CommandDataHelper.PLAY.value,

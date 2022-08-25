@@ -1,9 +1,6 @@
 package main.valuestorage;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import main.ConfigStorage;
 import main.MiscUtils;
@@ -43,7 +40,7 @@ public class Room_Info {
 	long roomId;
 	int size;
 	
-	public Room_Info(UserVals parent, Guild g, long owner, MessageChannel fromChannel, int size, String name, String[] others){
+	public Room_Info(UserVals parent, Guild g, long owner, MessageChannel fromChannel, int size, String name, List<String> others){
 		this.parent = parent;
 		this.ownerId = owner;
 		this.fromChannel = fromChannel;
@@ -52,8 +49,8 @@ public class Room_Info {
 		
 		
 		if(owner == ConfigStorage.botHelperID) {
-			owner = MiscUtils.findMember(g, others[0]).getIdLong();
-			others = Arrays.copyOfRange(others, 1, others.length);
+			owner = MiscUtils.findMember(g, others.get(0)).getIdLong();
+			others = others.subList(1, others.size());
 		}
 		
 		if(parent.roomOwners.containsKey(owner)) {
@@ -66,18 +63,17 @@ public class Room_Info {
 		
 		channel.getManager().setParent(g.getCategoryById(ConfigStorage.privateVoiceCategory)).queue();
 		
-		PermissionOverrideAction act = channel.putPermissionOverride(g.getMemberById(owner));
-		act = act.setAllow(Permission.VIEW_CHANNEL);
-		act.setAllow(EnumSet.of(Permission.VIEW_CHANNEL,Permission.MANAGE_CHANNEL)).queue();
+		PermissionOverrideAction act = channel.upsertPermissionOverride(g.getMemberById(owner));
+		act.grant(EnumSet.of(Permission.VIEW_CHANNEL,Permission.MANAGE_CHANNEL)).queue();
 		for(String s : others) {
 			if(s != null && MiscUtils.findMember(g, s)!=null) {
-				channel.putPermissionOverride(MiscUtils.findMember(g, s)).setAllow(Permission.VIEW_CHANNEL).queue();
+				channel.upsertPermissionOverride(MiscUtils.findMember(g, s)).grant(Permission.VIEW_CHANNEL).queue();
 			}	
 			else if(s!=null) {
 				fromChannel.sendMessage("Could not find " + s);
 			}
 		}
-		channel.putPermissionOverride(g.getRoleById(ConfigStorage.mainGuildID)).setDeny(EnumSet.of(Permission.VIEW_CHANNEL)).queue();
+		channel.upsertPermissionOverride(g.getRoleById(ConfigStorage.mainGuildID)).deny(EnumSet.of(Permission.VIEW_CHANNEL)).queue();
 		channel.getManager().setUserLimit(size).queue();
 		fromChannel.sendMessage("Created new voice channel\n```diff\n - Note: channel will auto delete after 30 minutes of inactivity```").queue();
 

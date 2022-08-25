@@ -37,7 +37,8 @@ public enum CommandType{
     VERYHIGHSCORES(32),
     MEANSCORES(33),
     JOB(34),
-    HELP(35);
+    HELP(35),
+    PING(36);
 
 
     public int value;
@@ -48,6 +49,9 @@ public enum CommandType{
     public static CommandType fromString(String commandString){
         CommandType out = BAD;
         switch (commandString.toLowerCase()){
+            case "!ping":
+                out = PING;
+                break;
             case "!start":
                 out = START;
                 break;

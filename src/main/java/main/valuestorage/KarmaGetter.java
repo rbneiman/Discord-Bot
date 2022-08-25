@@ -70,7 +70,7 @@ public class KarmaGetter implements Runnable{
 				System.out.println(tempArr.size());
 				for(Message m : tempArr) {
 					for(MessageReaction r : m.getReactions()) {
-						if(r.getReactionEmote().getName().toLowerCase().contentEquals("downvote")) {
+						if(r.getEmoji().getName().toLowerCase().contentEquals("downvote")) {
 							
 							r.retrieveUsers().queue((users) -> {
 								for(User u : users) {

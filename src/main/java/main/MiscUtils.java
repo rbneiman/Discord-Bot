@@ -154,14 +154,14 @@ public class MiscUtils {
 		}		
 		else if(words[1].toLowerCase().contentEquals("list")) {
 			if(words[2] == null) {
-				channel.sendMessage(CompanyInfo.getCompanies(hmap)).queue();
+				channel.sendMessage(CompanyInfo.getCompanies(hmap).toString()).queue();
 			}
 			else {
 				if(words[3] == null) {
-					channel.sendMessage(CompanyInfo.getJobs(hmap, words[2].toLowerCase())).queue();
+					channel.sendMessage(CompanyInfo.getJobs(hmap, words[2].toLowerCase()).toString()).queue();
 				}
 				else if(words[2] != null){
-					channel.sendMessage(CompanyInfo.getLinks(hmap, words[2].toLowerCase(), words[3].toLowerCase())).queue();
+					channel.sendMessage(CompanyInfo.getLinks(hmap, words[2].toLowerCase(), words[3].toLowerCase()).toString()).queue();
 				}
 			}			
 		}
