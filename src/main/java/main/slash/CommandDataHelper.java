@@ -154,8 +154,8 @@ public enum CommandDataHelper {
                                 new SubcommandData("add", "Add yourself to a class channel.")
                                         .addOption(OptionType.STRING, "name", "The name of the class to add.", true),
                                 new SubcommandData("drop", "Remove yourself from a class channel.")
-                                        .addOption(OptionType.STRING, "name", "The name of the class to drop.", true)
-
+                                        .addOption(OptionType.STRING, "name", "The name of the class to drop.", true),
+                                new SubcommandData("list", "List the class channels that you have joined.")
                         ));
                 break;
             case KARMA:
